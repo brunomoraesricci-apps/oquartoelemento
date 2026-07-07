@@ -53,3 +53,18 @@ order by updated_at desc;
 ## Limite da v6.0
 
 A v6.0 não consulta a API oficial do YouTube. Ela trabalha apenas com a URL. Título real, descrição, duração, data de publicação e tags entram na v6.1 com YouTube Data API.
+
+## v6.1 — Unified Video Content
+
+- `qe_transmissions` passa a ter `content_type` (`transmissao`, `relato`, `short`, `especial`).
+- Relatos deixam de ter CRUD separado no Admin e passam a ser vídeos do tipo `relato`.
+- A página `/relatos` continua existindo, mas lista vídeos com `contentType = relato`.
+- A Nova Publicação agora permite escolher o tipo de conteúdo antes de gerar o rascunho.
+- O carrossel do Hero fica limitado a 5 itens. Ao salvar, apenas os 5 primeiros por `heroOrder` permanecem ativos.
+
+Migração necessária:
+
+```sql
+-- Executar no Supabase SQL Editor
+-- docs/SUPABASE_V6_1_UNIFIED_VIDEO_CONTENT.sql
+```

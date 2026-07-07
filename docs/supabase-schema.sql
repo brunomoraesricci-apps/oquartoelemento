@@ -34,6 +34,7 @@ create table if not exists public.qe_transmissions (
   embed_url text,
   source_provider text,
   source_url text,
+  content_type text default 'transmissao',
   category_slug text,
   status text default 'Publicado',
   published_at text,
@@ -102,6 +103,7 @@ create table if not exists public.qe_reports (
   embed_url text,
   source_provider text,
   source_url text,
+  content_type text default 'transmissao',
   category_slug text,
   status text default 'Recebido',
   location text,
@@ -212,3 +214,4 @@ exception when duplicate_object then null; end $$;
 
 create index if not exists qe_sources_provider_id_idx on public.qe_sources(provider, provider_id);
 create index if not exists qe_transmissions_video_id_idx on public.qe_transmissions(video_id);
+create index if not exists qe_transmissions_content_type_idx on public.qe_transmissions(content_type);

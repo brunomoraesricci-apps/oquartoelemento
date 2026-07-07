@@ -28,21 +28,9 @@ function TransmissoesContent({ content }: { content: any }) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedTransmission, setSelectedTransmission] = useState<ModalTransmission | null>(null);
 
-  const reportsAsTransmissions = (content.relatos ?? []).map((report: any) => ({
-    code: report.code,
-    title: report.title,
-    description: report.description ?? report.subtitle,
-    image: report.image ?? "/images/identity-alt.png",
-    youtubeUrl: report.youtubeUrl ?? "",
-    slug: "relatos",
-    category: "Relatos",
-    year: report.year,
-    location: report.location,
-    tags: report.tags ?? ["Relato"],
-    isReport: true,
-  }));
-
-  const transmissions = [content.featuredTransmission, ...content.videos, ...reportsAsTransmissions];
+  const transmissions = [content.featuredTransmission, ...(content.videos ?? [])]
+    .filter(Boolean)
+    .filter((video: any) => video.contentType !== "relato" && !String(video.category ?? "").toLowerCase().includes("relato"));
 
   const categoryOptions = useMemo(() => {
     const fromCategories = (content.categories ?? []).map((category: any) => ({
@@ -146,7 +134,7 @@ function TransmissoesContent({ content }: { content: any }) {
                     </div>
 
                     <div className="transmissionDossierActions">
-                      <a className="btn btnRed" href={video.isReport ? "/relatos" : `/transmissoes/${slug}`}>Abrir dossiê →</a>
+                      <a className="btn btnRed" href={`/transmissoes/${slug}`}>Abrir dossiê →</a>
 
                       {youtubeIsValid ? (
                         <a className="btn" href={video.youtubeUrl} target="_blank" rel="noreferrer">

@@ -35,6 +35,7 @@ export default async function Home() {
     newsletter: content.sections?.newsletter !== false,
   };
 
+  const transmissionVideos = (content.videos ?? []).filter((video: any) => video.contentType !== "relato");
   return (
     <>
       <BootScreen />
@@ -77,7 +78,7 @@ export default async function Home() {
 
           {(sections.transmissions || sections.reports) && (
             <section id="transmissoes" className="section contentLayout">
-              {sections.transmissions && <VideoGrid videos={content.videos} />}
+              {sections.transmissions && <VideoGrid videos={transmissionVideos} />}
               {sections.reports && <RelatosInbox relatos={content.relatos} email={content.site.emailRelatos} />}
             </section>
           )}

@@ -30,7 +30,7 @@ type HeroConfig = {
 
 export function DynamicHero({ hero, transmission }: { hero: HeroConfig; transmission?: any }) {
   const items = useMemo(() => {
-    const carousel = hero.carouselItems?.length ? hero.carouselItems : [];
+    const carousel = hero.carouselItems?.length ? hero.carouselItems.slice(0, 5) : [];
     if (carousel.length > 0) return carousel;
 
     return [{

@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 export default async function RelatosPage() {
   const content = await getContentAsync();
-  const reports = content.relatos ?? [];
+  const reports = (content.videos ?? []).filter((video: any) => video.contentType === "relato" || String(video.category ?? "").toLowerCase().includes("relato"));
 
   return (
     <>

@@ -15,7 +15,7 @@ const labels: Record<Section, string> = {
   dashboard: "Dashboard",
   transmissions: "Transmissões",
   archives: "Arquivos",
-  reports: "Relatos",
+  reports: "Relatos (legado)",
   categories: "Categorias",
   youtube: "Nova Publicação",
   pipeline: "Central de Publicação",
@@ -28,7 +28,7 @@ const labels: Record<Section, string> = {
 
 const sidebarGroups: { title: string; items: Section[] }[] = [
   { title: "Central", items: ["dashboard"] },
-  { title: "Conteúdo", items: ["transmissions", "archives", "reports", "categories"] },
+  { title: "Conteúdo", items: ["transmissions", "archives", "categories"] },
   { title: "Publicação", items: ["youtube", "pipeline", "hero", "timeline"] },
   { title: "Dados", items: ["database"] },
   { title: "Sistema", items: ["settings", "json"] },
@@ -36,11 +36,12 @@ const sidebarGroups: { title: string; items: Section[] }[] = [
 
 const CATEGORY_OPTIONS = ["OVNIs e Fenômenos", "Desaparecimentos", "Lendas e Mitos", "Civilizações Perdidas", "Relatos Proibidos", "Deep Web", "Relatos"];
 const STATUS_OPTIONS = ["Publicado", "Rascunho", "Oculto", "Em análise", "Recebido"];
+const CONTENT_TYPE_OPTIONS = ["transmissao", "relato", "short", "especial"];
 const CLASSIFICATION_OPTIONS = ["Desclassificado", "Confidencial", "Restrito", "Ultrassecreto", "Arquivo incompleto", "Em investigação"];
 const CHIP_FIELDS = ["tags", "relatedArchives", "relatedReportCodes"];
 
 const transmissionGroups: FieldGroup[] = [
-  { title: "Conteúdo principal", description: "Campos que aparecem diretamente para o visitante.", fields: ["code", "title", "slug", "description", "image", "youtubeUrl", "category", "status"], defaultOpen: true },
+  { title: "Conteúdo principal", description: "Campos que aparecem diretamente para o visitante.", fields: ["contentType", "code", "title", "slug", "description", "image", "youtubeUrl", "category", "status"], defaultOpen: true },
   { title: "Metadados editoriais", description: "Informações de classificação e organização do acervo.", fields: ["location", "year", "tags"] },
   { title: "Relacionamentos", description: "Conexões manuais entre transmissões, arquivos e relatos.", fields: ["relatedArchives", "relatedReportCodes"] },
   { title: "SEO e compartilhamento", description: "Preparado para Google, WhatsApp, Facebook, Discord e outras redes.", fields: ["seoTitle", "seoDescription", "ogImage"] },
@@ -80,7 +81,7 @@ function slugify(value: string) {
 
 function label(field: string) {
   const map: Record<string, string> = {
-    title: "Título", slug: "Slug", code: "Código", description: "Descrição curta", longDescription: "Texto principal",
+    title: "Título", slug: "Slug", code: "Código", contentType: "Tipo de conteúdo", description: "Descrição curta", longDescription: "Texto principal",
     summary: "Resumo", image: "Imagem / Thumbnail", youtubeUrl: "YouTube URL", category: "Categoria", status: "Status",
     tags: "Tags", location: "Local", year: "Ano", subtitle: "Subtítulo", classification: "Classificação",
     accessLevel: "Nível de acesso", relatedTransmissionSlug: "Transmissão relacionada", showInHero: "Exibir no Hero",
@@ -94,7 +95,7 @@ function label(field: string) {
 }
 
 function emptyTransmission(index: number) {
-  return { code: `QE-TX-${String(index + 1).padStart(3, "0")}`, title: "Nova transmissão", slug: "nova-transmissao", description: "Descrição da transmissão.", image: "", youtubeUrl: "", category: "OVNIs e Fenômenos", status: "Rascunho", tags: ["Transmissão"], location: "Brasil", year: "2026", relatedArchives: [], relatedReportCodes: [], seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", showInHero: false, heroOrder: index + 1 };
+  return { contentType: "transmissao", code: `QE-TX-${String(index + 1).padStart(3, "0")}`, title: "Nova transmissão", slug: "nova-transmissao", description: "Descrição da transmissão.", image: "", youtubeUrl: "", category: "OVNIs e Fenômenos", status: "Rascunho", tags: ["Transmissão"], location: "Brasil", year: "2026", relatedArchives: [], relatedReportCodes: [], seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", showInHero: false, heroOrder: index + 1 };
 }
 function emptyArchive(index: number) {
   return { code: `QE-${String(index + 1).padStart(3, "0")}`, title: "Novo arquivo", slug: "novo-arquivo", summary: "Resumo do arquivo.", description: "Descrição curta do arquivo.", longDescription: "Texto principal do dossiê.", image: "", category: "OVNIs e Fenômenos", status: "Rascunho", location: "Brasil", year: "2026", classification: "Confidencial", accessLevel: "LV.04", relatedTransmissionSlug: "", relatedArchives: [], relatedReportCodes: [], seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", tags: ["Arquivo"] };
@@ -270,6 +271,7 @@ function blockToContent(block: QePackageBlock, content: any) {
       embedUrl: getField(data, "embed_url") ?? youtubeEmbed(String(getField(data, "video_id", "youtube_video_id") ?? extractYouTubeId(String(getField(data, "youtube", "youtube_url", "youtubeUrl") ?? "")))),
       sourceProvider: getField(data, "source_provider") ?? "youtube",
       sourceUrl: getField(data, "source_url") ?? getField(data, "youtube", "youtube_url", "youtubeUrl") ?? item.youtubeUrl,
+      contentType: getField(data, "content_type", "contentType", "type") ?? item.contentType ?? "transmissao",
       category: getField(data, "category") ?? item.category,
       status: getField(data, "status") ?? "Publicado",
       location: getField(data, "location") ?? item.location,
@@ -313,31 +315,32 @@ function blockToContent(block: QePackageBlock, content: any) {
     };
   }
   if (block.type === "REPORT") {
-    const item = emptyReport(content.relatos?.length ?? 0);
+    const item = emptyTransmission(content.videos?.length ?? 0);
+    const title = getField(data, "title") ?? "Novo relato";
     return {
       ...item,
-      code: getField(data, "code") ?? item.code,
-      title: getField(data, "title") ?? item.title,
-      slug: getField(data, "slug") ?? slugify(getField(data, "title") ?? item.title),
-      subtitle: getField(data, "subtitle") ?? item.subtitle,
-      description: getField(data, "description") ?? item.description,
+      contentType: "relato",
+      code: getField(data, "code") ?? `QE-R-${String((content.videos?.length ?? 0) + 1).padStart(3, "0")}`,
+      title,
+      slug: getField(data, "slug") ?? slugify(title),
+      description: getField(data, "description", "summary", "subtitle") ?? "Relato audiovisual catalogado no acervo.",
       image: getField(data, "image", "thumbnail") ?? item.image,
       youtubeUrl: getField(data, "youtube", "youtube_url", "youtubeUrl") ?? item.youtubeUrl,
       videoId: getField(data, "video_id", "youtube_video_id") ?? extractYouTubeId(String(getField(data, "youtube", "youtube_url", "youtubeUrl") ?? "")),
       embedUrl: getField(data, "embed_url") ?? youtubeEmbed(String(getField(data, "video_id", "youtube_video_id") ?? extractYouTubeId(String(getField(data, "youtube", "youtube_url", "youtubeUrl") ?? "")))),
       sourceProvider: getField(data, "source_provider") ?? "youtube",
       sourceUrl: getField(data, "source_url") ?? getField(data, "youtube", "youtube_url", "youtubeUrl") ?? item.youtubeUrl,
-      category: getField(data, "category") ?? item.category,
-      status: getField(data, "status") ?? item.status,
+      category: getField(data, "category") ?? "Relatos",
+      status: getField(data, "status") ?? "Publicado",
       location: getField(data, "location") ?? item.location,
       year: getField(data, "year") ?? item.year,
-      relatedArchiveSlug: getField(data, "related_archive", "related_archive_slug") ?? "",
-      relatedTransmissionSlug: getField(data, "related_transmission", "related_transmission_slug") ?? "",
-      seoTitle: getField(data, "seo_title") ?? "",
-      seoDescription: getField(data, "seo_description") ?? "",
-      ogImage: getField(data, "og_image") ?? getField(data, "image", "thumbnail") ?? "",
-      aiNotes: getField(data, "ai_notes") ?? "Importado via QE Content Package.",
+      relatedArchives: asArray(getField(data, "related_archive", "related_archive_slug", "related_archives")),
+      relatedReportCodes: [],
       tags: asArray(getField(data, "tags", "keywords")),
+      seoTitle: getField(data, "seo_title") ?? title,
+      seoDescription: getField(data, "seo_description") ?? item.seoDescription,
+      ogImage: getField(data, "og_image") ?? getField(data, "image", "thumbnail") ?? "",
+      aiNotes: getField(data, "ai_notes") ?? "Relato migrado para o modelo unificado de vídeos.",
     };
   }
   if (block.type === "CATEGORY") {
@@ -371,7 +374,7 @@ function applyQePackage(content: any, parsed: QePackageResult) {
     if (!item) continue;
     if (block.type === "TRANSMISSION") { clone.videos = upsertBySlug(clone.videos ?? [], item); summary.transmissions += 1; }
     if (block.type === "ARCHIVE") { clone.archives = upsertBySlug(clone.archives ?? [], item); summary.archives += 1; }
-    if (block.type === "REPORT") { clone.relatos = upsertBySlug(clone.relatos ?? [], item); summary.reports += 1; }
+    if (block.type === "REPORT") { clone.videos = upsertBySlug(clone.videos ?? [], item); summary.reports += 1; }
     if (block.type === "CATEGORY") { clone.categories = upsertBySlug(clone.categories ?? [], item); summary.categories += 1; }
     if (block.type === "TIMELINE") { clone.timeline = [...(clone.timeline ?? []), item]; summary.timeline += 1; }
     if (block.type === "HERO") { clone.hero = { ...(clone.hero ?? {}), ...Object.fromEntries(Object.entries(item).filter(([, value]) => value !== undefined && value !== "")) }; summary.hero += 1; }
@@ -516,6 +519,7 @@ function renderField(field: string, selectedItem: any, updateField: (field: stri
     const options = type === "category" ? CATEGORY_OPTIONS : Array.from(new Set([...(content.categories ?? []).map((c: any) => c.title), ...CATEGORY_OPTIONS]));
     return <SelectField key={field} label={label(field)} value={selectedItem[field]} options={options as string[]} onChange={(v) => updateField(field, v)} />;
   }
+  if (field === "contentType") return <SelectField key={field} label={label(field)} value={selectedItem[field] ?? "transmissao"} options={CONTENT_TYPE_OPTIONS} onChange={(v) => updateField(field, v)} />;
   if (field === "status") return <SelectField key={field} label={label(field)} value={selectedItem[field]} options={STATUS_OPTIONS} onChange={(v) => updateField(field, v)} />;
   if (field === "classification") return <SelectField key={field} label={label(field)} value={selectedItem[field]} options={CLASSIFICATION_OPTIONS} onChange={(v) => updateField(field, v)} />;
   if (field === "tags") return <TagsField key={field} value={selectedItem[field] ?? []} onChange={(v) => updateField(field, v)} />;
@@ -542,7 +546,7 @@ function allEditorialItems(content: any) {
   return [
     ...((content.videos ?? []).map((item: any) => ({ ...item, kind: "Transmissão", section: "transmissions" as Section }))),
     ...((content.archives ?? []).map((item: any) => ({ ...item, kind: "Arquivo", section: "archives" as Section }))),
-    ...((content.relatos ?? []).map((item: any) => ({ ...item, kind: "Relato", section: "reports" as Section }))),
+    ...((content.relatos ?? []).map((item: any) => ({ ...item, kind: "Relato", section: "transmissions" as Section }))),
     ...((content.categories ?? []).map((item: any) => ({ ...item, kind: "Categoria", section: "categories" as Section }))),
   ];
 }
@@ -623,7 +627,7 @@ function AdminDashboard({ content, stats, backups, onNavigate }: { content: any;
         <div className="opsRows">
           <button type="button" onClick={() => onNavigate("transmissions")}><b>{publishedItems.length}</b><small>Publicados</small></button>
           <button type="button" onClick={() => onNavigate("transmissions")}><b>{draftItems.length}</b><small>Rascunhos</small></button>
-          <button type="button" onClick={() => onNavigate("reports")}><b>{reviewItems.length}</b><small>Em revisão</small></button>
+          <button type="button" onClick={() => onNavigate("transmissions")}><b>{reviewItems.length}</b><small>Em revisão</small></button>
           <button type="button" onClick={() => onNavigate("pipeline")}><b>QE</b><small>Importar pacote</small></button>
         </div>
       </section>
@@ -654,6 +658,7 @@ function YouTubeIntelligencePanel({ content, onApply }: { content: any; onApply:
   const [status, setStatus] = useState("Rascunho");
   const [description, setDescription] = useState("Abrir transmissão no arquivo.");
   const [createArchive, setCreateArchive] = useState(true);
+  const [contentType, setContentType] = useState("transmissao");
   const [showInHero, setShowInHero] = useState(false);
   const [packageText, setPackageText] = useState("");
   const [localStatus, setLocalStatus] = useState("");
@@ -663,9 +668,10 @@ function YouTubeIntelligencePanel({ content, onApply }: { content: any; onApply:
   const embedUrl = youtubeEmbed(videoId);
   const thumbnail = youtubeThumb(videoId);
   const thumbs = youtubeThumbnailSet(videoId);
+  const effectiveCategory = contentType === "relato" ? "Relatos" : category;
   const safeTitle = title.trim() || draftTitleFromVideoId(videoId);
   const slug = slugify(safeTitle);
-  const nextTransmissionCode = nextCode("QE-V", [content.featuredTransmission, ...(content.videos ?? [])].filter(Boolean));
+  const nextTransmissionCode = nextCode(contentType === "relato" ? "QE-R" : "QE-V", [content.featuredTransmission, ...(content.videos ?? [])].filter(Boolean));
   const nextArchiveCode = nextCode("QE", content.archives ?? []);
   const archiveSlug = createArchive ? `${slug}-dossie` : "";
   const sourceId = videoId ? `youtube:${videoId}` : "";
@@ -682,7 +688,8 @@ TRANSMISSION
 CODE: ${nextTransmissionCode}
 TITLE: ${safeTitle}
 SLUG: ${slug}
-CATEGORY: ${category}
+CONTENT_TYPE: ${contentType}
+CATEGORY: ${effectiveCategory}
 YEAR: ${year}
 STATUS: ${status}
 SOURCE_PROVIDER: youtube
@@ -695,7 +702,7 @@ HERO: ${showInHero ? "true" : "false"}
 DESCRIPTION:
 ${description.trim() || "Abrir transmissão no arquivo."}
 TAGS:
-- ${category.toLowerCase()}
+- ${effectiveCategory.toLowerCase()}
 - quarto elemento
 - youtube
 SEO_TITLE: ${safeTitle} | O Quarto Elemento
@@ -709,7 +716,8 @@ ARCHIVE
 CODE: ${nextArchiveCode}
 TITLE: ${safeTitle}
 SLUG: ${archiveSlug}
-CATEGORY: ${category}
+CONTENT_TYPE: ${contentType}
+CATEGORY: ${effectiveCategory}
 YEAR: ${year}
 STATUS: Rascunho
 CLASSIFICATION: Em investigação
@@ -724,7 +732,7 @@ LONG_DESCRIPTION:
 Este dossiê foi criado automaticamente como ponto de partida editorial. Complete o texto com o contexto investigativo, evidências, linha do tempo e conexões do caso.
 RELATED_TRANSMISSION_SLUG: ${slug}
 TAGS:
-- ${category.toLowerCase()}
+- ${effectiveCategory.toLowerCase()}
 - dossiê
 - youtube-source
 SEO_TITLE: ${safeTitle} | Dossiê | O Quarto Elemento
@@ -756,6 +764,7 @@ END_ARCHIVE` : ""}`;
         <div>
           <TextField label="URL do YouTube" value={youtubeUrl} onChange={setYoutubeUrl} />
           <TextField label="Título editorial" value={title} onChange={setTitle} />
+          <div className="cmsField"><span>Tipo de conteúdo</span><select value={contentType} onChange={(e) => { setContentType(e.target.value); if (e.target.value === "relato") { setCategory("Relatos"); setCreateArchive(false); } }}><option value="transmissao">Transmissão</option><option value="relato">Relato</option><option value="short">Short</option><option value="especial">Especial</option></select></div>
           <div className="cmsField"><span>Categoria</span><select value={category} onChange={(e) => setCategory(e.target.value)}>{CATEGORY_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
           <div className="cmsField"><span>Status inicial</span><select value={status} onChange={(e) => setStatus(e.target.value)}>{["Rascunho", "Em análise", "Publicado", "Oculto"].map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
           <TextField label="Ano" value={year} onChange={setYear} />
@@ -772,7 +781,7 @@ END_ARCHIVE` : ""}`;
       <span>Source Intelligence</span>
       <h3>{safeTitle}</h3>
       <div className="packageCounts"><p>Provider: <b>{videoId ? "YouTube" : "—"}</b></p><p>Video ID: <b>{videoId || "—"}</b></p><p>Source ID: <b>{sourceId || "—"}</b></p><p>Código sugerido: <b>{nextTransmissionCode}</b></p><p>Slug: <b>{slug}</b></p><p>Embed: <b>{embedUrl ? "gerado" : "pendente"}</b></p><p>Thumbnail: <b>{thumbnail ? "detectada" : "pendente"}</b></p></div>
-      {thumbnail && <PreviewCard item={{ title: safeTitle, description, image: thumbnail, category, status }} type="YouTube" />}
+      {thumbnail && <PreviewCard item={{ title: safeTitle, description, image: thumbnail, category: effectiveCategory, status }} type={contentType === "relato" ? "Relato YouTube" : "YouTube"} />}
       {thumbs.length > 0 && <div className="sourceThumbList"><b>Thumbnails públicas</b>{thumbs.map((thumb) => <a key={thumb.label} href={thumb.url} target="_blank" rel="noreferrer">{thumb.label}</a>)}</div>}
       {embedUrl && <div className="embedPreview"><iframe src={embedUrl} title="YouTube preview" allowFullScreen /></div>}
       <div className="packageErrors"><b>Limite da v6.0</b><p>Esta versão não consulta a API oficial do YouTube. Título real, descrição completa, duração e data de publicação entram na v6.1 com YouTube Data API.</p></div>
@@ -934,11 +943,12 @@ export default function AdminPage() {
     setSaveDebug(null);
 
     const clone = structuredClone(content);
-    const heroSelected = [clone.featuredTransmission, ...(clone.videos ?? [])].filter((item: any) => item?.showInHero);
-    clone.hero = clone.hero ?? {};
-    clone.hero.carouselSelectedSlugs = heroSelected
+    const heroSelected = [clone.featuredTransmission, ...(clone.videos ?? [])]
+      .filter((item: any) => item?.showInHero)
       .sort((a: any, b: any) => Number(a.heroOrder ?? 99) - Number(b.heroOrder ?? 99))
-      .map((item: any) => item.slug);
+      .slice(0, 5);
+    clone.hero = clone.hero ?? {};
+    clone.hero.carouselSelectedSlugs = heroSelected.map((item: any) => item.slug);
     clone.hero.carouselItems = heroSelected.map((item: any) => ({
       code: item.code,
       title: item.title,
@@ -989,7 +999,6 @@ export default function AdminPage() {
   return <main className="adminPage cmsPage"><header className="cmsTop"><div><span>QE Archive System</span><h1>Content Studio</h1><p>Gerencie o acervo sem editar código. A complexidade técnica fica recolhida; o foco fica no conteúdo.</p></div><div className="cmsTopActions"><button className="btn btnRed" onClick={saveContent} disabled={isSaving}>{isSaving ? "Salvando..." : "Salvar alterações"}</button><button className="btn" onClick={downloadJson}>Baixar JSON</button><button className="btn" onClick={() => setActive("youtube")}>Nova publicação</button><button className="btn" onClick={() => setActive("pipeline")}>Importar pacote</button><a className="btn" href="/">Ver site</a><button className="btn danger" onClick={logout}>Logout</button></div></header>{status && <div className={status.startsWith("❌") ? "adminStatus adminStatusError" : "adminStatus"}>{status}</div>}{saveDebug && !saveDebug.ok && <details className="terminalPanel saveDebug"><summary>Detalhes técnicos do último save</summary><pre>{JSON.stringify(saveDebug, null, 2)}</pre></details>}<section className="cmsShell"><aside className="cmsSidebar terminalPanel">{sidebarGroups.map((group) => <div className="cmsNavGroup" key={group.title}><span>{group.title}</span>{group.items.map((s) => <button className={active === s ? "active" : ""} key={s} onClick={() => setActive(s)}>{labels[s]}</button>)}</div>)}</aside><section className="cmsContent">{active === "dashboard" && stats && <AdminDashboard content={content} stats={stats} backups={backups} onNavigate={setActive} />}
     {active === "transmissions" && <CollectionManager title="Transmissões" type="transmission" items={content.videos ?? []} content={content} uploadImage={uploadImage} groups={transmissionGroups} onAdd={() => addItem("videos", emptyTransmission(content.videos?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("videos", i, v)} onRemove={(i: number) => removeItem("videos", i)} />}
   {active === "archives" && <CollectionManager title="Arquivos" type="archive" items={content.archives ?? []} content={content} uploadImage={uploadImage} groups={archiveGroups} onAdd={() => addItem("archives", emptyArchive(content.archives?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("archives", i, v)} onRemove={(i: number) => removeItem("archives", i)} />}
-  {active === "reports" && <CollectionManager title="Relatos" type="report" items={content.relatos ?? []} content={content} uploadImage={uploadImage} groups={reportGroups} onAdd={() => addItem("relatos", emptyReport(content.relatos?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("relatos", i, v)} onRemove={(i: number) => removeItem("relatos", i)} />}
   {active === "youtube" && <YouTubeIntelligencePanel content={content} onApply={(nextContent, message) => { setContent(nextContent); setStatus(message); }} />}
   {active === "pipeline" && <ContentPipelinePanel content={content} onApply={(nextContent, message) => { setContent(nextContent); setStatus(message); }} />}
   {active === "categories" && <CollectionManager title="Categorias" type="category" items={content.categories ?? []} content={content} uploadImage={uploadImage} groups={categoryGroups} onAdd={() => addItem("categories", emptyCategory(content.categories?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("categories", i, v)} onRemove={(i: number) => removeItem("categories", i)} />}

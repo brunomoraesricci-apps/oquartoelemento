@@ -64,6 +64,11 @@ export function mapContentToSupabaseRows(content: any) {
   }));
 
   const allTransmissions = [content.featuredTransmission, ...(content.videos ?? [])].filter(Boolean);
+  const heroAllowedSlugs = new Set(allTransmissions
+    .filter((video: any) => video?.showInHero)
+    .sort((a: any, b: any) => Number(a.heroOrder ?? 99) - Number(b.heroOrder ?? 99))
+    .slice(0, 5)
+    .map((video: any) => video.slug));
 
   const sources = allTransmissions
     .map((video: any) => {
@@ -102,7 +107,8 @@ export function mapContentToSupabaseRows(content: any) {
     location: video.location ?? "",
     duration: video.duration ?? "",
     views: video.views ?? "",
-    show_in_hero: Boolean(video.showInHero),
+    content_type: video.contentType ?? (String(video.category ?? "").toLowerCase().includes("relato") ? "relato" : "transmissao"),
+    show_in_hero: Boolean(video.showInHero) && heroAllowedSlugs.has(video.slug),
     hero_order: Number(video.heroOrder ?? index + 1),
     tags: arr(video.tags),
     related_archives: arr(video.relatedArchives),
@@ -132,21 +138,9 @@ export function mapContentToSupabaseRows(content: any) {
     ai_source_url: archive.aiSourceUrl ?? "",
   }));
 
-  const reports = (content.relatos ?? []).map((report: any, index: number) => ({
-    ...tableRowBase(report),
-    code: report.code ?? `RP-${String(index + 1).padStart(3, "0")}`,
-    subtitle: report.subtitle ?? "",
-    youtube_url: report.youtubeUrl ?? "",
-    category_slug: slugify(report.category ?? "relatos"),
-    location: report.location ?? "",
-    year: String(report.year ?? ""),
-    related_archive_slug: report.relatedArchiveSlug ?? "",
-    related_transmission_slug: report.relatedTransmissionSlug ?? "",
-    tags: arr(report.tags),
-    ai_generated: Boolean(report.aiGenerated),
-    ai_reviewed: Boolean(report.aiReviewed),
-    ai_source_url: report.aiSourceUrl ?? "",
-  }));
+  // v6.1: relatos são vídeos em qe_transmissions (content_type = "relato").
+  // qe_reports permanece apenas como legado e não recebe novas escritas.
+  const reports: any[] = [];
 
   const timeline = (content.timeline ?? []).map((event: any, index: number) => ({
     year: String(event.year ?? ""),
@@ -250,7 +244,6 @@ export async function importContentIntoSupabase(content: any) {
     ["qe_sources", rows.sources, "provider,provider_id"],
     ["qe_transmissions", rows.transmissions, "slug"],
     ["qe_archives", rows.archives, "slug"],
-    ["qe_reports", rows.reports, "code"],
     ["qe_timeline_events", rows.timeline, "title,year"],
     ["qe_site_settings", rows.settings, "key"],
   ];
@@ -319,6 +312,7 @@ function transmissionFromRow(row: any, categories: any[]) {
     embedUrl: row.embed_url ?? row.raw?.embedUrl ?? youtubeEmbed(row.video_id ?? extractYouTubeId(row.youtube_url ?? row.raw?.youtubeUrl ?? "")),
     sourceProvider: row.source_provider ?? row.raw?.sourceProvider ?? (row.youtube_url ? "youtube" : ""),
     sourceUrl: row.source_url ?? row.raw?.sourceUrl ?? row.youtube_url ?? row.raw?.youtubeUrl ?? "",
+    contentType: row.content_type ?? row.raw?.contentType ?? (String(row.category_slug ?? "").includes("relato") ? "relato" : "transmissao"),
     category: row.raw?.category ?? categoryTitleBySlug(categories, row.category_slug),
     publishedAt: row.published_at ?? row.raw?.publishedAt ?? "",
     year: row.year ?? row.raw?.year ?? "",
@@ -361,6 +355,7 @@ function reportFromRow(row: any, categories: any[]) {
     embedUrl: row.embed_url ?? row.raw?.embedUrl ?? youtubeEmbed(row.video_id ?? extractYouTubeId(row.youtube_url ?? row.raw?.youtubeUrl ?? "")),
     sourceProvider: row.source_provider ?? row.raw?.sourceProvider ?? (row.youtube_url ? "youtube" : ""),
     sourceUrl: row.source_url ?? row.raw?.sourceUrl ?? row.youtube_url ?? row.raw?.youtubeUrl ?? "",
+    contentType: row.content_type ?? row.raw?.contentType ?? (String(row.category_slug ?? "").includes("relato") ? "relato" : "transmissao"),
     category: row.raw?.category ?? categoryTitleBySlug(categories, row.category_slug),
     location: row.location ?? row.raw?.location ?? "",
     year: row.year ?? row.raw?.year ?? "",
@@ -394,24 +389,27 @@ export async function readContentFromSupabase() {
   const client = createSupabasePublicClient();
   if (!client) return null;
 
-  const [categoriesResult, transmissionsResult, archivesResult, reportsResult, timelineResult, settingsResult] = await Promise.all([
+  const [categoriesResult, transmissionsResult, archivesResult, timelineResult, settingsResult] = await Promise.all([
     client.from("qe_categories").select("*").order("sort_order", { ascending: true }),
     client.from("qe_transmissions").select("*").order("hero_order", { ascending: true }),
     client.from("qe_archives").select("*").order("year", { ascending: false }),
-    client.from("qe_reports").select("*").order("created_at", { ascending: false }),
     client.from("qe_timeline_events").select("*").order("sort_order", { ascending: true }),
     client.from("qe_site_settings").select("*"),
   ]);
 
-  const firstError = [categoriesResult, transmissionsResult, archivesResult, reportsResult, timelineResult, settingsResult].find((result) => result.error)?.error;
+  const firstError = [categoriesResult, transmissionsResult, archivesResult, timelineResult, settingsResult].find((result) => result.error)?.error;
   if (firstError) throw new Error(firstError.message);
 
   const categories = (categoriesResult.data ?? []).map(categoryFromRow);
   const transmissions = (transmissionsResult.data ?? []).map((row: any) => transmissionFromRow(row, categories));
-  const heroCandidate = transmissions.find((item: any) => item.showInHero) ?? transmissions[0] ?? null;
+  const heroCandidates = transmissions
+    .filter((item: any) => item.showInHero)
+    .sort((a: any, b: any) => Number(a.heroOrder ?? 99) - Number(b.heroOrder ?? 99))
+    .slice(0, 5);
+  const heroCandidate = heroCandidates[0] ?? transmissions[0] ?? null;
   const videos = transmissions.filter((item: any) => item.slug !== heroCandidate?.slug);
   const archives = (archivesResult.data ?? []).map((row: any) => archiveFromRow(row, categories));
-  const relatos = (reportsResult.data ?? []).map((row: any) => reportFromRow(row, categories));
+  const relatos = transmissions.filter((item: any) => item.contentType === "relato" || String(item.category ?? "").toLowerCase().includes("relato"));
   const timeline = (timelineResult.data ?? []).map(timelineFromRow);
   const settings = settingsResult.data ?? [];
   const featuredArchive = settingValue(settings, "featuredArchive", null) ?? archives[0] ?? {};
