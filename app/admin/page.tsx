@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-type Section = "dashboard" | "transmissions" | "archives" | "reports" | "categories" | "youtube" | "pipeline" | "hero" | "timeline" | "database" | "settings" | "json";
+type Section = "dashboard" | "transmissions" | "archives" | "reports" | "categories" | "youtube" | "pipeline" | "hero" | "timeline" | "database" | "diagnostics" | "settings" | "json";
 
 type FieldGroup = {
   title: string;
@@ -22,6 +22,7 @@ const labels: Record<Section, string> = {
   hero: "Hero",
   timeline: "Timeline",
   database: "Fonte de Dados",
+  diagnostics: "Diagnóstico",
   settings: "Configurações",
   json: "Modo Dev",
 };
@@ -30,7 +31,7 @@ const sidebarGroups: { title: string; items: Section[] }[] = [
   { title: "Central", items: ["dashboard"] },
   { title: "Conteúdo", items: ["transmissions", "archives", "categories"] },
   { title: "Publicação", items: ["youtube", "pipeline", "hero", "timeline"] },
-  { title: "Dados", items: ["database"] },
+  { title: "Dados", items: ["database", "diagnostics"] },
   { title: "Sistema", items: ["settings", "json"] },
 ];
 
@@ -920,6 +921,149 @@ function DatabasePanel() {
   </div>;
 }
 
+
+type DiagnosticTable = {
+  table: string;
+  label: string;
+  required: boolean;
+  ok: boolean;
+  count: number | null;
+  message?: string;
+};
+
+type DiagnosticResult = {
+  ok: boolean;
+  version: string;
+  schemaVersion: string;
+  checkedAt: string;
+  environment: string;
+  supabase: {
+    configured: boolean;
+    adminConfigured: boolean;
+    mode: string;
+    urlConfigured: boolean;
+    publishableKeyConfigured: boolean;
+    serviceRoleKeyConfigured: boolean;
+  };
+  tables: DiagnosticTable[];
+  migrations: { applied: boolean; count: number; latest?: string; message?: string };
+  counts: Record<string, number | null>;
+  recommendations: string[];
+};
+
+function DiagnosticsPanel() {
+  const [diagnostics, setDiagnostics] = useState<DiagnosticResult | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function runDiagnostics() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/diagnostics", { cache: "no-store" });
+      const data = await res.json();
+      setDiagnostics(data);
+    } catch {
+      setDiagnostics({
+        ok: false,
+        version: "v6.4",
+        schemaVersion: "unknown",
+        checkedAt: new Date().toISOString(),
+        environment: "unknown",
+        supabase: { configured: false, adminConfigured: false, mode: "error", urlConfigured: false, publishableKeyConfigured: false, serviceRoleKeyConfigured: false },
+        tables: [],
+        migrations: { applied: false, count: 0, message: "Falha ao consultar diagnóstico." },
+        counts: {},
+        recommendations: ["Verifique a API /api/admin/diagnostics e as variáveis de ambiente."],
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { runDiagnostics(); }, []);
+
+  const requiredTables = diagnostics?.tables.filter((table) => table.required) ?? [];
+  const optionalTables = diagnostics?.tables.filter((table) => !table.required) ?? [];
+  const healthScore = diagnostics
+    ? Math.round(([
+        diagnostics.supabase.configured,
+        diagnostics.supabase.adminConfigured,
+        diagnostics.migrations.applied,
+        ...requiredTables.map((table) => table.ok),
+      ].filter(Boolean).length / Math.max(1, 3 + requiredTables.length)) * 100)
+    : 0;
+
+  return <div className="dashboardGrid diagnosticsPanel">
+    <section className="terminalPanel editorialHeroPanel">
+      <span>QE Platform Diagnostics</span>
+      <h2>Diagnóstico da Plataforma</h2>
+      <p>Verifique conexão, variáveis, tabelas obrigatórias, migrações, contagens do acervo e compatibilidade entre o Content Studio e o Supabase.</p>
+      <div className="packageActions">
+        <button className="btn btnRed" type="button" onClick={runDiagnostics} disabled={loading}>{loading ? "Executando..." : "Executar diagnóstico"}</button>
+      </div>
+    </section>
+
+    <section className="terminalPanel editorialCommandCenter">
+      <div>
+        <span>Status geral</span>
+        <h2>{diagnostics?.ok ? "Plataforma operacional" : "Atenção necessária"}</h2>
+        <p>Versão: <b>{diagnostics?.version ?? "v6.4"}</b> · Schema: <b>{diagnostics?.schemaVersion ?? "—"}</b> · Ambiente: <b>{diagnostics?.environment ?? "—"}</b></p>
+        <p>Última verificação: <b>{diagnostics ? formatDateTime(diagnostics.checkedAt) : "—"}</b></p>
+      </div>
+      <div className="healthGauge"><b>{healthScore}%</b><small>saúde técnica</small></div>
+    </section>
+
+    <section className="terminalPanel editorialOpsPanel">
+      <span>Supabase</span>
+      <div className="packageCounts">
+        <p>Configurado: <b>{diagnostics?.supabase.configured ? "Sim" : "Não"}</b></p>
+        <p>Modo: <b>{diagnostics?.supabase.mode ?? "—"}</b></p>
+        <p>Admin/Service Role: <b>{diagnostics?.supabase.adminConfigured ? "Sim" : "Não"}</b></p>
+        <p>URL: <b>{diagnostics?.supabase.urlConfigured ? "OK" : "Ausente"}</b></p>
+        <p>Publishable Key: <b>{diagnostics?.supabase.publishableKeyConfigured ? "OK" : "Ausente"}</b></p>
+        <p>Service Role Key: <b>{diagnostics?.supabase.serviceRoleKeyConfigured ? "OK" : "Ausente"}</b></p>
+      </div>
+    </section>
+
+    <section className="terminalPanel editorialIssues">
+      <div className="cmsEditorHead"><div><span>Migrações</span><h2>Schema versionado</h2></div></div>
+      <div className={diagnostics?.migrations.applied ? "packageApplied" : "packageErrors"}>
+        <b>{diagnostics?.migrations.applied ? "Controle de migrações ativo" : "Controle de migrações pendente"}</b>
+        <p>{diagnostics?.migrations.message ?? `${diagnostics?.migrations.count ?? 0} migração(ões) registrada(s). Última: ${diagnostics?.migrations.latest ?? "—"}`}</p>
+      </div>
+      <p className="cmsHint">Se o controle estiver pendente, execute <b>docs/SUPABASE_V6_4_DIAGNOSTICS.sql</b> no SQL Editor do Supabase.</p>
+    </section>
+
+    <section className="terminalPanel editorialIssues">
+      <div className="cmsEditorHead"><div><span>Tabelas obrigatórias</span><h2>Integridade do banco</h2></div></div>
+      <div className="packageBlockList">
+        {requiredTables.map((table) => <div key={table.table}>
+          <small>{table.ok ? "OK" : "PENDENTE"}</small>
+          <b>{table.label}</b>
+          <span>{table.ok ? `${table.count ?? 0} registro(s)` : table.message ?? "Tabela indisponível"}</span>
+        </div>)}
+      </div>
+    </section>
+
+    <section className="terminalPanel editorialIssues">
+      <div className="cmsEditorHead"><div><span>Tabelas opcionais</span><h2>Recursos avançados</h2></div></div>
+      <div className="packageBlockList">
+        {optionalTables.map((table) => <div key={table.table}>
+          <small>{table.ok ? "OK" : "NÃO ATIVO"}</small>
+          <b>{table.label}</b>
+          <span>{table.ok ? `${table.count ?? 0} registro(s)` : table.message ?? "Opcional"}</span>
+        </div>)}
+      </div>
+    </section>
+
+    <section className="terminalPanel editorialIssues">
+      <div className="cmsEditorHead"><div><span>Recomendações</span><h2>Checklist técnico</h2></div></div>
+      <div className="issueList">
+        {(diagnostics?.recommendations?.length ? diagnostics.recommendations : ["Nenhuma pendência crítica detectada."]).map((item) => <button type="button" key={item}><b>{item}</b><span>Diagnóstico v6.4</span></button>)}
+      </div>
+    </section>
+  </div>;
+}
+
 export default function AdminPage() {
   const [content, setContent] = useState<any | null>(null);
   const [active, setActive] = useState<Section>("dashboard");
@@ -1002,9 +1146,10 @@ export default function AdminPage() {
   {active === "pipeline" && <ContentPipelinePanel content={content} onApply={(nextContent, message) => { setContent(nextContent); setStatus(message); }} />}
   {active === "categories" && <CollectionManager title="Categorias" type="category" items={content.categories ?? []} content={content} uploadImage={uploadImage} groups={categoryGroups} onAdd={() => addItem("categories", emptyCategory(content.categories?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("categories", i, v)} onRemove={(i: number) => removeItem("categories", i)} />}
   {active === "database" && <DatabasePanel />}
+  {active === "diagnostics" && <DiagnosticsPanel />}
   {active === "timeline" && <CollectionManager title="Timeline" type="archive" items={content.timeline ?? []} content={content} uploadImage={uploadImage} groups={timelineGroups} onAdd={() => addItem("timeline", { year: "2026", title: "Novo evento", text: "Descrição do evento." })} onUpdate={(i: number, v: any) => updateArray("timeline", i, v)} onRemove={(i: number) => removeItem("timeline", i)} />}
   {active === "hero" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Publicação</span><h2>Hero principal</h2></div></div><div className="cmsEditorGrid"><div>{["eyebrow", "title", "subtitle", "description", "image", "primaryActionLabel", "secondaryActionLabel", "featuredArchiveSlug", "featuredTransmissionSlug", "featuredTransmissionYoutubeUrl"].map((f) => f === "image" ? <UploadField key={f} label={label(f)} value={content.hero?.[f] ?? ""} onChange={(v) => update(`hero.${f}`, v)} onUpload={uploadImage} /> : <TextField key={f} label={label(f)} value={content.hero?.[f] ?? ""} textarea={f === "description"} onChange={(v) => update(`hero.${f}`, v)} />)}<div className="cmsField"><span>Carrossel do Hero</span><p className="cmsHint">Marque “Exibir no Hero” nas transmissões para controlar o carrossel.</p></div></div><PreviewCard item={{ title: content.hero?.title, description: content.hero?.description, image: content.hero?.image, category: "Hero", status: "Ativo" }} type="Hero" /></div></div>}
   {active === "settings" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Sistema</span><h2>Configurações do site</h2></div></div><div className="cmsEditorGrid single"><div><TextField label="Título do site" value={content.site?.title} onChange={(v) => update("site.title", v)} /><TextField label="Tagline" value={content.site?.tagline} onChange={(v) => update("site.tagline", v)} /><TextField label="Descrição" value={content.site?.description} textarea onChange={(v) => update("site.description", v)} /><TextField label="E-mail de relatos" value={content.site?.emailRelatos} onChange={(v) => update("site.emailRelatos", v)} /><TextField label="URL YouTube" value={content.site?.youtubeUrl} onChange={(v) => update("site.youtubeUrl", v)} /><TextField label="URL Instagram" value={content.site?.instagramUrl} onChange={(v) => update("site.instagramUrl", v)} /></div></div></div>}
   {active === "json" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Modo desenvolvedor</span><h2>JSON completo</h2></div></div><p className="cmsHint devHint">Use apenas para conferência avançada, exportação ou correções pontuais. O Supabase agora é a fonte oficial do acervo; este JSON é somente exportação/fallback.</p><textarea className="jsonEditor" value={JSON.stringify(content, null, 2)} onChange={(e) => { try { setContent(JSON.parse(e.target.value)); } catch { setStatus("JSON inválido."); } }} /></div>}
-  </section></section></main>;
+  </section></section><footer className="cmsVersionFooter">QE Content Studio · v6.4.0 · Supabase Source of Truth · Schema 004</footer></main>;
 }
