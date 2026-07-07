@@ -1,8 +1,8 @@
 import content from "@/data/content.json";
 import { categoryTransmissionPath } from "@/lib/routes";
 
-export function Footer({ email }: { email: string }) {
-  const categories = (content.categories ?? []).slice(0, 6);
+export function Footer({ email, categories: categoriesInput }: { email: string; categories?: any[] }) {
+  const categories = (categoriesInput ?? content.categories ?? []).slice(0, 6);
 
   return (
     <footer className="footer">

@@ -1,4 +1,4 @@
-import { getContent } from "@/lib/content";
+import { getContentAsync } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
@@ -8,6 +8,8 @@ import { ArchiveCard } from "@/components/ArchiveCard";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ShareBox } from "@/components/ShareBox";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 function localSlugify(value: string) {
   return value
@@ -51,18 +53,10 @@ function getYouTubeEmbedUrl(url?: string) {
   }
 }
 
-export async function generateStaticParams() {
-  const content = getContent();
-  const transmissions = [content.featuredTransmission, ...(content.videos ?? [])];
-
-  return transmissions.map((item: any) => ({
-    slug: getTransmissionSlug(item),
-  }));
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const content = getContent();
+  const content = await getContentAsync();
   const transmission = [content.featuredTransmission, ...(content.videos ?? [])].find((item: any) =>
     getTransmissionSlug(item) === slug
   );
@@ -87,7 +81,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function TransmissionDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const content = getContent();
+  const content = await getContentAsync();
   const allTransmissions = [content.featuredTransmission, ...(content.videos ?? [])];
 
   const transmission = allTransmissions.find((item: any) =>
@@ -112,7 +106,7 @@ export default async function TransmissionDetailPage({ params }: { params: Promi
       <BootScreen />
       <SideRail />
       <div className="siteShell">
-        <Navbar email={content.site.emailRelatos} sections={content.sections} />
+        <Navbar email={content.site.emailRelatos} sections={content.sections} contentData={content} />
 
         <main>
           <Breadcrumb items={[
@@ -214,7 +208,7 @@ export default async function TransmissionDetailPage({ params }: { params: Promi
           )}
         </main>
 
-        <Footer email={content.site.emailRelatos} />
+        <Footer email={content.site.emailRelatos} categories={content.categories} />
       </div>
     </>
   );

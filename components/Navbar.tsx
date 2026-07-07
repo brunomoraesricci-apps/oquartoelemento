@@ -23,7 +23,7 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
-export function Navbar({ email, sections }: { email: string; sections?: SectionsConfig }) {
+export function Navbar({ email, sections, contentData }: { email: string; sections?: SectionsConfig; contentData?: any }) {
   const pathname = usePathname();
   const isVisible = (key: keyof SectionsConfig) => sections?.[key] !== false;
 
@@ -54,7 +54,7 @@ export function Navbar({ email, sections }: { email: string; sections?: Sections
       </nav>
 
       <div className="topActions">
-        <GlobalSearch content={content} />
+        <GlobalSearch content={contentData ?? content} />
         <span className="rec">REC <i /></span>
         <ReportModal email={email} />
       </div>

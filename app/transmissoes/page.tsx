@@ -1,3 +1,4 @@
+import { getContentAsync } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import TransmissoesPageClient from "@/components/TransmissoesPageClient";
 
@@ -8,6 +9,9 @@ export const metadata = buildMetadata({
   keywords: ["transmissões", "YouTube", "documentários", "mistérios"],
 });
 
-export default function TransmissoesPage() {
-  return <TransmissoesPageClient />;
+export const dynamic = "force-dynamic";
+
+export default async function TransmissoesPage() {
+  const content = await getContentAsync();
+  return <TransmissoesPageClient content={content} />;
 }

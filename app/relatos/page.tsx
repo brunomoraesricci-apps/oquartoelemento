@@ -1,4 +1,4 @@
-import { getContent } from "@/lib/content";
+import { getContentAsync } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
@@ -16,8 +16,8 @@ export const metadata = buildMetadata({
 
 export const dynamic = "force-dynamic";
 
-export default function RelatosPage() {
-  const content = getContent();
+export default async function RelatosPage() {
+  const content = await getContentAsync();
   const reports = content.relatos ?? [];
 
   return (
@@ -25,7 +25,7 @@ export default function RelatosPage() {
       <BootScreen />
       <SideRail />
       <div className="siteShell">
-        <Navbar email={content.site.emailRelatos} sections={content.sections} />
+        <Navbar email={content.site.emailRelatos} sections={content.sections} contentData={content} />
         <main>
           <PageHeader
             eyebrow="Arquivo comunitário"
@@ -35,7 +35,7 @@ export default function RelatosPage() {
 
           <ReportCards reports={reports} email={content.site.emailRelatos} />
         </main>
-        <Footer email={content.site.emailRelatos} />
+        <Footer email={content.site.emailRelatos} categories={content.categories} />
       </div>
     </>
   );

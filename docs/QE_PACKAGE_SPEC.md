@@ -184,3 +184,31 @@ END_TIMELINE
 - O importador faz upsert por `slug` ou `code` quando possível.
 - O pacote é aplicado localmente primeiro. Para gravar de fato, clique em **Salvar alterações**.
 - O formato foi desenhado para ser gerado por ChatGPT hoje e por APIs/IA no futuro, sem mudar o Admin.
+
+## Fluxo de segurança — v4.2
+
+A Central de Publicação agora trabalha com um fluxo em duas etapas:
+
+1. **Simular pacote** — faz um dry run, identifica criações, atualizações e alertas.
+2. **Aplicar localmente** — atualiza o estado do Content Studio, mas ainda não grava no JSON.
+3. **Salvar alterações** — grava o `data/content.json`.
+
+Antes de cada salvamento, o Admin cria automaticamente um backup em:
+
+```txt
+data/backups/
+```
+
+Isso permite manter uma trilha de segurança enquanto o projeto ainda usa JSON local.
+
+### Alertas de validação
+
+A simulação pode indicar:
+
+- categoria inexistente;
+- imagem ausente;
+- SEO incompleto;
+- item que será criado;
+- item que será atualizado por slug ou code.
+
+Esses alertas não impedem a importação. Eles funcionam como checklist editorial antes da publicação.

@@ -1,4 +1,4 @@
-import { getContent } from "@/lib/content";
+import { getContentAsync } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
@@ -7,6 +7,8 @@ import { Footer } from "@/components/Footer";
 import { ArchiveCard } from "@/components/ArchiveCard";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 function localSlugify(value: string) {
   return value
@@ -17,16 +19,10 @@ function localSlugify(value: string) {
     .replace(/(^-|-$)+/g, "");
 }
 
-export async function generateStaticParams() {
-  const content = getContent();
-  return (content.categories ?? []).map((category: any) => ({
-    slug: category.slug ?? localSlugify(category.title),
-  }));
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const content = getContent();
+  const content = await getContentAsync();
   const category = (content.categories ?? []).find((item: any) => (item.slug ?? localSlugify(item.title)) === slug);
 
   if (!category) {
@@ -49,7 +45,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const content = getContent();
+  const content = await getContentAsync();
   const category = (content.categories ?? []).find((item: any) => (item.slug ?? localSlugify(item.title)) === slug);
 
   if (!category) notFound();
@@ -67,7 +63,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       <BootScreen />
       <SideRail />
       <div className="siteShell">
-        <Navbar email={content.site.emailRelatos} sections={content.sections} />
+        <Navbar email={content.site.emailRelatos} sections={content.sections} contentData={content} />
         <main>
           <Breadcrumb items={[{ label: "Categorias" }, { label: category.title }]} />
 
@@ -125,7 +121,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
             )}
           </section>
         </main>
-        <Footer email={content.site.emailRelatos} />
+        <Footer email={content.site.emailRelatos} categories={content.categories} />
       </div>
     </>
   );

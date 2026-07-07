@@ -1,88 +1,67 @@
-# O Quarto Elemento — v3.4 Content Studio
+# O Quarto Elemento — v4.3 Editorial Dashboard
 
-Site oficial do canal **O Quarto Elemento**, estruturado como um arquivo investigativo digital.
+Entrega focada em transformar o Dashboard do Content Studio em uma visão operacional de publicação.
 
-## Stack
+## Novidades
 
-- Next.js App Router
-- TypeScript
-- Tailwind/CSS customizado
-- Vercel
-- Cloudflare
+- Dashboard editorial com saúde do acervo.
+- Última transmissão publicada.
+- Hero ativo e quantidade de itens no carrossel.
+- Último backup criado automaticamente.
+- Fila editorial por status: publicado, rascunho e revisão.
+- Pendências detectadas: SEO, imagens e categorias sem imagem.
+- Checklist operacional com atalhos para as seções corretas.
+- Mantém login protegido, QE Package, simulação de pacote e backup automático da v4.2.
 
-## v3.4 — O que mudou
+## Como rodar
 
-Esta versão reorganiza o Admin para funcionar como um **Content Studio**, reduzindo a exposição de campos técnicos e preparando o painel para automação editorial futura.
+Crie `.env.local` com base no `.env.example`:
 
-### Admin / Content Studio
+```env
+ADMIN_USERNAME=Admin
+ADMIN_PASSWORD=sua-senha-forte
+ADMIN_SESSION_SECRET=um-segredo-longo-aleatorio
+```
 
-- Renomeia o painel para **Content Studio**.
-- Reorganiza o menu lateral em grupos:
-  - Central
-  - Conteúdo
-  - Publicação
-  - Sistema
-- Mantém a estrutura atual do site, sem criar novas páginas.
-- Transforma o JSON completo em **Modo Dev**.
-- Adiciona botão desabilitado **Processar IA**, já preparando a experiência futura.
-
-### Campos recolhidos por contexto
-
-Transmissões, Arquivos, Relatos e Categorias agora exibem campos em blocos recolhíveis:
-
-- Conteúdo principal
-- Metadados editoriais
-- Relacionamentos
-- SEO e compartilhamento
-- Automação futura
-- Hero, quando aplicável
-
-### Filosofia da versão
-
-A ideia é manter o site simples de manter e forte para evoluir:
-
-- Poucas entidades.
-- Menos edição manual técnica.
-- Mais foco em conteúdo.
-- IA futura como copiloto editorial.
-
-## Desenvolvimento
+Depois:
 
 ```bash
 npm install
-npm run dev
-```
-
-## Build
-
-```bash
 npm run build
+npm run dev
 ```
 
-## Deploy
+## Testes principais
 
-O deploy é automático pela Vercel após `git push` na branch principal.
+- `/admin` deve exigir login.
+- Dashboard deve mostrar cards editoriais e pendências.
+- Central de Publicação deve simular e aplicar pacote localmente.
+- Salvar alterações deve criar backup em `data/backups`.
+- Logout deve encerrar a sessão.
 
-## v4.0 — Content Pipeline
+## v5.1 — Supabase Foundation
 
-Esta versão adiciona a **Central de Publicação** no Admin.
+Esta versão adiciona a fundação Supabase sem remover o JSON atual.
 
-O fluxo editorial agora aceita pacotes TXT estruturados no padrão **QE Content Package v1.0**, permitindo que o ChatGPT gere um pacote completo e o Content Studio distribua os dados para o site.
+- Schema SQL em `docs/supabase-schema.sql`
+- Guia de migração em `docs/SUPABASE_MIGRATION.md`
+- Clients Supabase em `lib/supabase.ts`
+- Importador JSON → Supabase protegido por login admin
+- Painel **Banco de Dados** dentro do Content Studio
 
-Documentação do formato:
+Para instalar a nova dependência:
 
-```txt
-docs/QE_PACKAGE_SPEC.md
+```bash
+npm install
 ```
 
-Fluxo:
+Depois configure `.env.local` e rode:
 
 ```bash
 npm run dev
-# acessar /admin
-# abrir Central de Publicação
-# colar pacote
-# validar
-# processar
-# salvar alterações
 ```
+
+
+## v5.1 — Hybrid Read
+
+Leitura pública com Supabase como fonte principal e fallback automático para `data/content.json`. Consulte `docs/SUPABASE_HYBRID_READ.md`.

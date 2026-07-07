@@ -1,4 +1,4 @@
-import { getContent } from "@/lib/content";
+import { getContentAsync } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
@@ -15,8 +15,8 @@ export const metadata = buildMetadata({
 
 export const dynamic = "force-dynamic";
 
-export default function LinhaDoTempoPage() {
-  const content = getContent();
+export default async function LinhaDoTempoPage() {
+  const content = await getContentAsync();
   const archives = content.archives ?? [];
 
   return (
@@ -24,7 +24,7 @@ export default function LinhaDoTempoPage() {
       <BootScreen />
       <SideRail />
       <div className="siteShell">
-        <Navbar email={content.site.emailRelatos} sections={content.sections} />
+        <Navbar email={content.site.emailRelatos} sections={content.sections} contentData={content} />
         <main>
           <PageHeader
             eyebrow="Cronologia"
@@ -61,7 +61,7 @@ export default function LinhaDoTempoPage() {
             })}
           </section>
         </main>
-        <Footer email={content.site.emailRelatos} />
+        <Footer email={content.site.emailRelatos} categories={content.categories} />
       </div>
     </>
   );

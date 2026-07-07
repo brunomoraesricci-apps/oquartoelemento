@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getContent } from "@/lib/content";
+import { getContentAsync } from "@/lib/content";
 import { SITE_URL } from "@/lib/seo";
 
 function slugify(value: string) {
@@ -11,8 +11,10 @@ function slugify(value: string) {
     .replace(/(^-|-$)+/g, "");
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const content = getContent();
+export const dynamic = "force-dynamic";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const content = await getContentAsync();
   const now = new Date();
 
   const staticRoutes = [

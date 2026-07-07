@@ -2,7 +2,6 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import content from "@/data/content.json";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
 import { Navbar } from "@/components/Navbar";
@@ -23,7 +22,7 @@ function getTransmissionSlug(video: any) {
   return video.slug || localSlugify(video.title || video.code || "transmissao");
 }
 
-function TransmissoesContent() {
+function TransmissoesContent({ content }: { content: any }) {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("categoria") ?? "todos";
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
@@ -85,7 +84,7 @@ function TransmissoesContent() {
       <BootScreen />
       <SideRail />
       <div className="siteShell">
-        <Navbar email={content.site.emailRelatos} sections={content.sections} />
+        <Navbar email={content.site.emailRelatos} sections={content.sections} contentData={content} />
         <main>
           <PageHeader
             eyebrow="Módulo de transmissões"
@@ -172,7 +171,7 @@ function TransmissoesContent() {
           </section>
         </main>
 
-        <Footer email={content.site.emailRelatos} />
+        <Footer email={content.site.emailRelatos} categories={content.categories} />
       </div>
 
       {selectedTransmission && (
@@ -186,7 +185,7 @@ function TransmissoesContent() {
 }
 
 
-export default function TransmissoesPage() {
+export default function TransmissoesPage({ content }: { content: any }) {
   return (
     <Suspense fallback={
       <div className="bootScreen bootScreenRoute">
@@ -197,7 +196,7 @@ export default function TransmissoesPage() {
         </div>
       </div>
     }>
-      <TransmissoesContent />
+      <TransmissoesContent content={content} />
     </Suspense>
   );
 }

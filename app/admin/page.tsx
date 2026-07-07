@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-type Section = "dashboard" | "transmissions" | "archives" | "reports" | "categories" | "pipeline" | "hero" | "timeline" | "settings" | "json";
+type Section = "dashboard" | "transmissions" | "archives" | "reports" | "categories" | "pipeline" | "hero" | "timeline" | "database" | "settings" | "json";
 
 type FieldGroup = {
   title: string;
@@ -20,6 +20,7 @@ const labels: Record<Section, string> = {
   pipeline: "Central de Publicação",
   hero: "Hero",
   timeline: "Timeline",
+  database: "Banco de Dados",
   settings: "Configurações",
   json: "Modo Dev",
 };
@@ -28,6 +29,7 @@ const sidebarGroups: { title: string; items: Section[] }[] = [
   { title: "Central", items: ["dashboard"] },
   { title: "Conteúdo", items: ["transmissions", "archives", "reports", "categories"] },
   { title: "Publicação", items: ["pipeline", "hero", "timeline"] },
+  { title: "Dados", items: ["database"] },
   { title: "Sistema", items: ["settings", "json"] },
 ];
 
@@ -313,6 +315,61 @@ function applyQePackage(content: any, parsed: QePackageResult) {
   return { content: clone, summary };
 }
 
+
+type PackageAnalysis = {
+  actions: string[];
+  warnings: string[];
+  creates: number;
+  updates: number;
+};
+
+function getCollectionForBlock(content: any, type: string) {
+  if (type === "TRANSMISSION") return content.videos ?? [];
+  if (type === "ARCHIVE") return content.archives ?? [];
+  if (type === "REPORT") return content.relatos ?? [];
+  if (type === "CATEGORY") return content.categories ?? [];
+  return [];
+}
+
+function analyzeQePackage(content: any, parsed: QePackageResult): PackageAnalysis {
+  const actions: string[] = [];
+  const warnings: string[] = [];
+  let creates = 0;
+  let updates = 0;
+  const categoryTitles = new Set((content.categories ?? []).map((category: any) => String(category.title ?? "").toLowerCase()));
+
+  for (const block of parsed.blocks) {
+    const title = getField(block.data, "title") ?? getField(block.data, "slug") ?? block.type;
+    const slug = getField(block.data, "slug") ?? slugify(String(title));
+    const collection = getCollectionForBlock(content, block.type);
+    const exists = collection.some((item: any) => item.slug === slug || item.code === getField(block.data, "code"));
+
+    if (["TRANSMISSION", "ARCHIVE", "REPORT", "CATEGORY"].includes(block.type)) {
+      exists ? updates++ : creates++;
+      actions.push(`${exists ? "Atualizar" : "Criar"} ${block.type.toLowerCase()}: ${title}`);
+    }
+
+    if (["TRANSMISSION", "ARCHIVE", "REPORT"].includes(block.type)) {
+      const category = getField(block.data, "category");
+      if (category && !categoryTitles.has(String(category).toLowerCase())) {
+        warnings.push(`Categoria não encontrada para ${title}: ${category}`);
+      }
+      if (!getField(block.data, "image", "thumbnail")) {
+        warnings.push(`Imagem ausente em ${title}. O item será salvo, mas revise a thumbnail depois.`);
+      }
+      if (!getField(block.data, "seo_title") || !getField(block.data, "seo_description")) {
+        warnings.push(`SEO incompleto em ${title}.`);
+      }
+    }
+
+    if (block.type === "HERO") actions.push(`Atualizar hero: ${title}`);
+    if (block.type === "TIMELINE") actions.push(`Adicionar evento de timeline: ${title}`);
+  }
+
+  if (!parsed.blocks.length) warnings.push("Nenhum bloco processável encontrado.");
+  return { actions, warnings, creates, updates };
+}
+
 const SAMPLE_QE_PACKAGE = `QE_PACKAGE_VERSION: 1.0
 
 TRANSMISSION
@@ -414,11 +471,122 @@ function CollectionManager({ title, type, items, onAdd, onUpdate, onRemove, grou
 }
 
 
+
+type BackupRecord = { file: string; createdAt: string; size: number };
+
+function allEditorialItems(content: any) {
+  return [
+    ...((content.videos ?? []).map((item: any) => ({ ...item, kind: "Transmissão", section: "transmissions" as Section }))),
+    ...((content.archives ?? []).map((item: any) => ({ ...item, kind: "Arquivo", section: "archives" as Section }))),
+    ...((content.relatos ?? []).map((item: any) => ({ ...item, kind: "Relato", section: "reports" as Section }))),
+    ...((content.categories ?? []).map((item: any) => ({ ...item, kind: "Categoria", section: "categories" as Section }))),
+  ];
+}
+
+function statusType(status?: string) {
+  const normalized = String(status ?? "").toLowerCase();
+  if (["publicado", "published", "ativo", "active"].includes(normalized)) return "published";
+  if (["rascunho", "draft"].includes(normalized)) return "draft";
+  if (["em análise", "em analise", "recebido", "review", "received"].includes(normalized)) return "review";
+  return "other";
+}
+
+function formatDateTime(value?: string) {
+  if (!value) return "Sem registro";
+  try { return new Date(value).toLocaleString("pt-BR"); } catch { return value; }
+}
+
+function AdminDashboard({ content, stats, backups, onNavigate }: { content: any; stats: any; backups: BackupRecord[]; onNavigate: (section: Section) => void }) {
+  const items = allEditorialItems(content);
+  const draftItems = items.filter((item) => statusType(item.status) === "draft");
+  const reviewItems = items.filter((item) => statusType(item.status) === "review");
+  const publishedItems = items.filter((item) => statusType(item.status) === "published");
+  const seoPending = items.filter((item) => !item.seoTitle || !item.seoDescription);
+  const imagePending = items.filter((item) => !item.image && item.kind !== "Relato");
+  const categoryImagePending = (content.categories ?? []).filter((category: any) => !category.image);
+  const heroSlugs = content.hero?.carouselSelectedSlugs ?? [];
+  const heroTitle = content.hero?.carouselItems?.[0]?.title ?? content.featuredTransmission?.title ?? content.hero?.title ?? "Hero não definido";
+  const latestTransmission = [...(content.videos ?? [])].reverse().find((item: any) => statusType(item.status) === "published") ?? content.videos?.[0];
+  const lastBackup = backups?.[0];
+  const healthScore = Math.max(0, 100 - seoPending.length * 8 - imagePending.length * 6 - draftItems.length * 4 - reviewItems.length * 3);
+  const criticalIssues = [
+    ...seoPending.slice(0, 3).map((item: any) => ({ label: `${item.kind}: ${item.title}`, detail: "SEO pendente", section: item.section })),
+    ...imagePending.slice(0, 2).map((item: any) => ({ label: `${item.kind}: ${item.title}`, detail: "Imagem ausente", section: item.section })),
+    ...categoryImagePending.slice(0, 2).map((item: any) => ({ label: `Categoria: ${item.title}`, detail: "Imagem de categoria ausente", section: "categories" as Section })),
+  ].slice(0, 6);
+
+  return <div className="adminDashboard editorialDashboard">
+    <div className="adminDashGrid editorialStats">
+      <div><b>{stats.transmissions}</b><span>Transmissões</span></div>
+      <div><b>{stats.archives}</b><span>Arquivos</span></div>
+      <div><b>{stats.reports}</b><span>Relatos</span></div>
+      <div><b>{stats.categories}</b><span>Categorias</span></div>
+    </div>
+
+    <section className="terminalPanel editorialCommandCenter">
+      <div>
+        <span>Status editorial</span>
+        <h2>Central de Operação</h2>
+        <p>Visão rápida das pendências, publicação e integridade do acervo antes do próximo deploy.</p>
+      </div>
+      <div className="healthGauge"><b>{healthScore}%</b><small>saúde editorial</small></div>
+    </section>
+
+    <div className="editorialDashboardGrid">
+      <section className="terminalPanel editorialCard">
+        <span>Última transmissão</span>
+        <h3>{latestTransmission?.title ?? "Nenhuma transmissão"}</h3>
+        <p>{latestTransmission?.description ?? "Cadastre uma transmissão para iniciar o acervo editorial."}</p>
+        <button className="btn" type="button" onClick={() => onNavigate("transmissions")}>Revisar transmissões</button>
+      </section>
+      <section className="terminalPanel editorialCard">
+        <span>Hero ativo</span>
+        <h3>{heroTitle}</h3>
+        <p>{heroSlugs.length ? `${heroSlugs.length} item(ns) no carrossel principal.` : "Nenhum item marcado no carrossel. Revise o Hero antes do deploy."}</p>
+        <button className="btn" type="button" onClick={() => onNavigate("hero")}>Abrir Hero</button>
+      </section>
+      <section className="terminalPanel editorialCard">
+        <span>Último backup</span>
+        <h3>{lastBackup ? lastBackup.file : "Nenhum backup encontrado"}</h3>
+        <p>{lastBackup ? formatDateTime(lastBackup.createdAt) : "O primeiro backup será criado automaticamente no próximo salvamento."}</p>
+        <button className="btn" type="button" onClick={() => onNavigate("json")}>Modo Dev</button>
+      </section>
+    </div>
+
+    <div className="editorialDashboardGrid narrow">
+      <section className="terminalPanel editorialOpsPanel">
+        <span>Fila editorial</span>
+        <div className="opsRows">
+          <button type="button" onClick={() => onNavigate("transmissions")}><b>{publishedItems.length}</b><small>Publicados</small></button>
+          <button type="button" onClick={() => onNavigate("transmissions")}><b>{draftItems.length}</b><small>Rascunhos</small></button>
+          <button type="button" onClick={() => onNavigate("reports")}><b>{reviewItems.length}</b><small>Em revisão</small></button>
+          <button type="button" onClick={() => onNavigate("pipeline")}><b>QE</b><small>Importar pacote</small></button>
+        </div>
+      </section>
+      <section className="terminalPanel editorialOpsPanel">
+        <span>Pendências detectadas</span>
+        <div className="opsRows">
+          <button type="button" onClick={() => onNavigate("transmissions")}><b>{seoPending.length}</b><small>SEO pendente</small></button>
+          <button type="button" onClick={() => onNavigate("archives")}><b>{imagePending.length}</b><small>Imagens faltando</small></button>
+          <button type="button" onClick={() => onNavigate("categories")}><b>{categoryImagePending.length}</b><small>Categorias sem imagem</small></button>
+          <button type="button" onClick={() => onNavigate("pipeline")}><b>DRY</b><small>Simular pacote</small></button>
+        </div>
+      </section>
+    </div>
+
+    <section className="terminalPanel editorialIssues">
+      <div className="cmsEditorHead"><div><span>Checklist operacional</span><h2>Pontos antes do deploy</h2></div><button className="btn" type="button" onClick={() => onNavigate("pipeline")}>Nova publicação</button></div>
+      {criticalIssues.length ? <div className="issueList">{criticalIssues.map((issue, index) => <button type="button" key={`${issue.label}-${index}`} onClick={() => onNavigate(issue.section)}><b>{issue.detail}</b><span>{issue.label}</span></button>)}</div> : <div className="allClear"><b>Acervo sem pendências críticas.</b><p>SEO, imagens e categorias principais estão em bom estado para o próximo deploy.</p></div>}
+    </section>
+  </div>;
+}
+
 function ContentPipelinePanel({ content, onApply }: { content: any; onApply: (nextContent: any, message: string) => void }) {
   const [packageText, setPackageText] = useState("");
   const [preview, setPreview] = useState<QePackageResult | null>(null);
   const [appliedSummary, setAppliedSummary] = useState<any | null>(null);
   const parsed = preview ?? parseQePackage(packageText);
+  const analysis = useMemo(() => analyzeQePackage(content, parsed), [content, parsed]);
   const counts = parsed.blocks.reduce((acc: any, block) => { acc[block.type] = (acc[block.type] ?? 0) + 1; return acc; }, {});
   function validate() { setPreview(parseQePackage(packageText)); setAppliedSummary(null); }
   function apply() {
@@ -427,16 +595,89 @@ function ContentPipelinePanel({ content, onApply }: { content: any; onApply: (ne
     if (nextParsed.errors.length) return;
     const result = applyQePackage(content, nextParsed);
     setAppliedSummary(result.summary);
-    onApply(result.content, `Pacote aplicado: ${nextParsed.blocks.length} bloco(s) importado(s). Revise e clique em Salvar alterações.`);
+    onApply(result.content, `Pacote aplicado em modo local: ${nextParsed.blocks.length} bloco(s). Revise o preview e clique em Salvar alterações para publicar.`);
   }
-  return <div className="pipelineGrid"><section className="terminalPanel packageImporter"><div className="cmsEditorHead"><div><span>QE Content Pipeline</span><h2>Central de Publicação</h2></div><button className="btn" type="button" onClick={() => { setPackageText(SAMPLE_QE_PACKAGE); setPreview(null); setAppliedSummary(null); }}>Carregar exemplo</button></div><p className="cmsHint">Cole aqui o pacote gerado pelo ChatGPT. O Content Studio interpreta o texto, cria um preview e distribui os dados para Transmissões, Arquivos, Relatos, Categorias, Hero e Timeline.</p><textarea className="packageEditor" value={packageText} placeholder="Cole o QE Content Package aqui..." onChange={(e) => { setPackageText(e.target.value); setPreview(null); setAppliedSummary(null); }} /><div className="packageActions"><button className="btn" type="button" onClick={validate}>Validar pacote</button><button className="btn btnRed" type="button" onClick={apply} disabled={!packageText.trim()}>Processar pacote</button></div></section><aside className="terminalPanel packagePreview"><span>Preview de importação</span><h3>{parsed.errors.length ? "Pacote pendente" : "Pacote detectado"}</h3>{parsed.errors.length ? <div className="packageErrors">{parsed.errors.map((error) => <p key={error}>⚠ {error}</p>)}</div> : <div className="packageCounts"><p>Versão: <b>{parsed.version}</b></p><p>Transmissões: <b>{counts.TRANSMISSION ?? 0}</b></p><p>Arquivos: <b>{counts.ARCHIVE ?? 0}</b></p><p>Relatos: <b>{counts.REPORT ?? 0}</b></p><p>Categorias: <b>{counts.CATEGORY ?? 0}</b></p><p>Hero: <b>{counts.HERO ?? 0}</b></p><p>Timeline: <b>{counts.TIMELINE ?? 0}</b></p></div>}{parsed.blocks.length > 0 && <div className="packageBlockList">{parsed.blocks.map((block, index) => <div key={`${block.type}-${index}`}><small>{block.type}</small><b>{getField(block.data, "title") ?? getField(block.data, "slug") ?? `Bloco ${index + 1}`}</b></div>)}</div>}{appliedSummary && <div className="packageApplied"><b>Pacote aplicado localmente.</b><p>Use “Salvar alterações” no topo para gravar o JSON.</p></div>}</aside></div>;
+  return <div className="pipelineGrid"><section className="terminalPanel packageImporter"><div className="cmsEditorHead"><div><span>QE Content Pipeline</span><h2>Central de Publicação</h2></div><button className="btn" type="button" onClick={() => { setPackageText(SAMPLE_QE_PACKAGE); setPreview(null); setAppliedSummary(null); }}>Carregar exemplo</button></div><p className="cmsHint">Cole aqui o pacote gerado pelo ChatGPT. O Content Studio interpreta o texto, simula as alterações e só aplica localmente depois da sua confirmação.</p><textarea className="packageEditor" value={packageText} placeholder="Cole o QE Content Package aqui..." onChange={(e) => { setPackageText(e.target.value); setPreview(null); setAppliedSummary(null); }} /><div className="packageActions"><button className="btn" type="button" onClick={validate}>Simular pacote</button><button className="btn btnRed" type="button" onClick={apply} disabled={!packageText.trim() || parsed.errors.length > 0}>Aplicar localmente</button></div></section><aside className="terminalPanel packagePreview"><span>Preview de importação</span><h3>{parsed.errors.length ? "Pacote pendente" : "Simulação pronta"}</h3>{parsed.errors.length ? <div className="packageErrors">{parsed.errors.map((error) => <p key={error}>⚠ {error}</p>)}</div> : <div className="packageCounts"><p>Versão: <b>{parsed.version}</b></p><p>Criações: <b>{analysis.creates}</b></p><p>Atualizações: <b>{analysis.updates}</b></p><p>Transmissões: <b>{counts.TRANSMISSION ?? 0}</b></p><p>Arquivos: <b>{counts.ARCHIVE ?? 0}</b></p><p>Relatos: <b>{counts.REPORT ?? 0}</b></p><p>Categorias: <b>{counts.CATEGORY ?? 0}</b></p><p>Hero: <b>{counts.HERO ?? 0}</b></p><p>Timeline: <b>{counts.TIMELINE ?? 0}</b></p></div>}{analysis.warnings.length > 0 && <div className="packageErrors"><b>Atenção antes de aplicar</b>{analysis.warnings.slice(0, 6).map((warning) => <p key={warning}>⚠ {warning}</p>)}</div>}{analysis.actions.length > 0 && <div className="packageBlockList">{analysis.actions.slice(0, 8).map((action) => <div key={action}><small>DRY RUN</small><b>{action}</b></div>)}</div>}{parsed.blocks.length > 0 && <div className="packageBlockList">{parsed.blocks.map((block, index) => <div key={`${block.type}-${index}`}><small>{block.type}</small><b>{getField(block.data, "title") ?? getField(block.data, "slug") ?? `Bloco ${index + 1}`}</b></div>)}</div>}{appliedSummary && <div className="packageApplied"><b>Pacote aplicado localmente.</b><p>Use “Salvar alterações” no topo para gravar o JSON. Um backup automático será criado antes de salvar.</p></div>}</aside></div>;
+}
+
+
+function DatabasePanel() {
+  const [status, setStatus] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [importResult, setImportResult] = useState<any | null>(null);
+
+  async function checkConnection() {
+    setLoading(true);
+    setImportResult(null);
+    try {
+      const res = await fetch("/api/admin/supabase/status", { cache: "no-store" });
+      setStatus(await res.json());
+    } catch {
+      setStatus({ ok: false, message: "Erro ao consultar status do Supabase." });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function importJson() {
+    setLoading(true);
+    setImportResult(null);
+    try {
+      const res = await fetch("/api/admin/supabase/import", { method: "POST" });
+      setImportResult(await res.json());
+      await checkConnection();
+    } catch {
+      setImportResult({ ok: false, message: "Erro ao importar JSON para Supabase." });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return <div className="dashboardGrid">
+    <section className="terminalPanel editorialHeroPanel">
+      <span>Supabase Foundation</span>
+      <h2>Banco de Dados Editorial</h2>
+      <p>Esta etapa prepara o Content Studio para abandonar o JSON no futuro. Por enquanto, o site continua estável lendo o JSON local, enquanto o Supabase recebe uma cópia estruturada do acervo.</p>
+      <div className="packageActions">
+        <button className="btn" type="button" onClick={checkConnection} disabled={loading}>Verificar conexão</button>
+        <button className="btn btnRed" type="button" onClick={importJson} disabled={loading}>Importar JSON para Supabase</button>
+      </div>
+    </section>
+
+    <section className="terminalPanel editorialOpsPanel">
+      <span>Status da conexão</span>
+      <div className="packageCounts">
+        <p>Estado: <b>{status ? (status.ok ? "Conectado" : "Atenção") : "Não verificado"}</b></p>
+        <p>Modo: <b>{status?.mode ?? "—"}</b></p>
+        <p>Categorias no banco: <b>{status?.categories ?? "—"}</b></p>
+      </div>
+      {status?.message && <div className={status.ok ? "packageApplied" : "packageErrors"}><p>{status.message}</p></div>}
+    </section>
+
+    <section className="terminalPanel editorialIssues">
+      <div className="cmsEditorHead"><div><span>Plano de migração</span><h2>JSON → Supabase</h2></div></div>
+      <div className="issueList">
+        <button type="button"><b>1. Criar tabelas</b><span>Rodar docs/supabase-schema.sql no SQL Editor.</span></button>
+        <button type="button"><b>2. Configurar variáveis</b><span>.env.local e Vercel Environment Variables.</span></button>
+        <button type="button"><b>3. Importar acervo</b><span>Enviar o JSON atual para o Supabase.</span></button>
+        <button type="button"><b>4. Próxima versão</b><span>Ativar leitura híbrida e publicação direta.</span></button>
+      </div>
+    </section>
+
+    {importResult && <section className="terminalPanel editorialIssues">
+      <div className="cmsEditorHead"><div><span>Resultado da importação</span><h2>{importResult.ok ? "Importação concluída" : "Importação não concluída"}</h2></div></div>
+      {importResult.ok ? <div className="packageBlockList">{(importResult.results ?? []).map((item: any) => <div key={item.table}><small>{item.table}</small><b>{item.count} registro(s)</b></div>)}</div> : <div className="packageErrors"><p>{importResult.message}</p></div>}
+    </section>}
+  </div>;
 }
 
 export default function AdminPage() {
   const [content, setContent] = useState<any | null>(null);
   const [active, setActive] = useState<Section>("dashboard");
   const [status, setStatus] = useState("");
+  const [backups, setBackups] = useState<BackupRecord[]>([]);
   useEffect(() => { fetch("/api/admin/content", { cache: "no-store" }).then((r) => r.json()).then(setContent); }, []);
+  useEffect(() => { fetch("/api/admin/backups", { cache: "no-store" }).then((r) => r.json()).then((data) => setBackups(data.backups ?? [])).catch(() => setBackups([])); }, []);
   const stats = useMemo(() => content ? { transmissions: [content.featuredTransmission, ...(content.videos ?? [])].filter(Boolean).length, archives: content.archives?.length ?? 0, reports: content.relatos?.length ?? 0, categories: content.categories?.length ?? 0 } : null, [content]);
   if (!content) return <main className="adminPage"><h1>Carregando Content Studio...</h1></main>;
   function update(path: string, value: any) { const clone = structuredClone(content); const parts = path.split("."); let target = clone; parts.slice(0, -1).forEach((p) => { target[p] = target[p] ?? {}; target = target[p]; }); target[parts[parts.length - 1]] = value; setContent(clone); }
@@ -444,15 +685,16 @@ export default function AdminPage() {
   function addItem(collection: string, item: any) { const clone = structuredClone(content); clone[collection] = [...(clone[collection] ?? []), item]; setContent(clone); }
   function removeItem(collection: string, index: number) { const clone = structuredClone(content); clone[collection] = clone[collection].filter((_: any, i: number) => i !== index); setContent(clone); }
   async function uploadImage(file: File) { const fd = new FormData(); fd.append("file", file); const res = await fetch("/api/admin/upload", { method: "POST", body: fd }); const data = await res.json(); return data.url; }
-  async function saveContent() { const clone = structuredClone(content); const heroSelected = [clone.featuredTransmission, ...(clone.videos ?? [])].filter((item: any) => item?.showInHero); clone.hero = clone.hero ?? {}; clone.hero.carouselSelectedSlugs = heroSelected.sort((a: any, b: any) => Number(a.heroOrder ?? 99) - Number(b.heroOrder ?? 99)).map((item: any) => item.slug); clone.hero.carouselItems = heroSelected.map((item: any) => ({ code: item.code, title: item.title, description: item.description, image: item.image, slug: item.slug, youtubeUrl: item.youtubeUrl, category: item.category })); const res = await fetch("/api/admin/content", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(clone) }); setStatus(res.ok ? `Conteúdo salvo (${new Date().toLocaleTimeString()}).` : "Erro ao salvar conteúdo."); if (res.ok) setContent(clone); }
+  async function saveContent() { const clone = structuredClone(content); const heroSelected = [clone.featuredTransmission, ...(clone.videos ?? [])].filter((item: any) => item?.showInHero); clone.hero = clone.hero ?? {}; clone.hero.carouselSelectedSlugs = heroSelected.sort((a: any, b: any) => Number(a.heroOrder ?? 99) - Number(b.heroOrder ?? 99)).map((item: any) => item.slug); clone.hero.carouselItems = heroSelected.map((item: any) => ({ code: item.code, title: item.title, description: item.description, image: item.image, slug: item.slug, youtubeUrl: item.youtubeUrl, category: item.category })); const res = await fetch("/api/admin/content", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(clone) }); setStatus(res.ok ? `Conteúdo salvo (${new Date().toLocaleTimeString()}).` : "Erro ao salvar conteúdo."); if (res.ok) { setContent(clone); fetch("/api/admin/backups", { cache: "no-store" }).then((r) => r.json()).then((data) => setBackups(data.backups ?? [])).catch(() => setBackups([])); } }
   function downloadJson() { const blob = new Blob([JSON.stringify(content, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "content.json"; a.click(); URL.revokeObjectURL(url); }
   async function logout() { await fetch("/api/admin/logout", { method: "POST" }); window.location.href = "/admin/login"; }
-  return <main className="adminPage cmsPage"><header className="cmsTop"><div><span>QE Archive System</span><h1>Content Studio</h1><p>Gerencie o acervo sem editar código. A complexidade técnica fica recolhida; o foco fica no conteúdo.</p></div><div className="cmsTopActions"><button className="btn btnRed" onClick={saveContent}>Salvar alterações</button><button className="btn" onClick={downloadJson}>Baixar JSON</button><button className="btn" onClick={() => setActive("pipeline")}>Importar pacote</button><a className="btn" href="/">Ver site</a><button className="btn danger" onClick={logout}>Logout</button></div></header><section className="cmsShell"><aside className="cmsSidebar terminalPanel">{sidebarGroups.map((group) => <div className="cmsNavGroup" key={group.title}><span>{group.title}</span>{group.items.map((s) => <button className={active === s ? "active" : ""} key={s} onClick={() => setActive(s)}>{labels[s]}</button>)}</div>)}</aside><section className="cmsContent">{active === "dashboard" && stats && <div className="adminDashboard"><div className="adminDashGrid"><div><b>{stats.transmissions}</b><span>Transmissões</span></div><div><b>{stats.archives}</b><span>Arquivos</span></div><div><b>{stats.reports}</b><span>Relatos</span></div><div><b>{stats.categories}</b><span>Categorias</span></div></div><section className="terminalPanel cmsHeroSummary"><span>Status editorial</span><h2>Acervo pronto para automação</h2><p>O modelo de dados já separa conteúdo principal, SEO, relacionamentos e agora aceita pacotes editoriais QE gerados pelo ChatGPT.</p></section><section className="terminalPanel adminQuickPanel"><h3>Checklist antes do deploy</h3><p>1. Revisar Hero e transmissões exibidas.</p><p>2. Conferir thumbnails e links do YouTube.</p><p>3. Validar categorias, tags e relacionamentos.</p><p>4. Revisar campos SEO/IA antes de publicar.</p></section></div>}
-  {active === "transmissions" && <CollectionManager title="Transmissões" type="transmission" items={content.videos ?? []} content={content} uploadImage={uploadImage} groups={transmissionGroups} onAdd={() => addItem("videos", emptyTransmission(content.videos?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("videos", i, v)} onRemove={(i: number) => removeItem("videos", i)} />}
+  return <main className="adminPage cmsPage"><header className="cmsTop"><div><span>QE Archive System</span><h1>Content Studio</h1><p>Gerencie o acervo sem editar código. A complexidade técnica fica recolhida; o foco fica no conteúdo.</p></div><div className="cmsTopActions"><button className="btn btnRed" onClick={saveContent}>Salvar alterações</button><button className="btn" onClick={downloadJson}>Baixar JSON</button><button className="btn" onClick={() => setActive("pipeline")}>Importar pacote</button><a className="btn" href="/">Ver site</a><button className="btn danger" onClick={logout}>Logout</button></div></header><section className="cmsShell"><aside className="cmsSidebar terminalPanel">{sidebarGroups.map((group) => <div className="cmsNavGroup" key={group.title}><span>{group.title}</span>{group.items.map((s) => <button className={active === s ? "active" : ""} key={s} onClick={() => setActive(s)}>{labels[s]}</button>)}</div>)}</aside><section className="cmsContent">{active === "dashboard" && stats && <AdminDashboard content={content} stats={stats} backups={backups} onNavigate={setActive} />}
+    {active === "transmissions" && <CollectionManager title="Transmissões" type="transmission" items={content.videos ?? []} content={content} uploadImage={uploadImage} groups={transmissionGroups} onAdd={() => addItem("videos", emptyTransmission(content.videos?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("videos", i, v)} onRemove={(i: number) => removeItem("videos", i)} />}
   {active === "archives" && <CollectionManager title="Arquivos" type="archive" items={content.archives ?? []} content={content} uploadImage={uploadImage} groups={archiveGroups} onAdd={() => addItem("archives", emptyArchive(content.archives?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("archives", i, v)} onRemove={(i: number) => removeItem("archives", i)} />}
   {active === "reports" && <CollectionManager title="Relatos" type="report" items={content.relatos ?? []} content={content} uploadImage={uploadImage} groups={reportGroups} onAdd={() => addItem("relatos", emptyReport(content.relatos?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("relatos", i, v)} onRemove={(i: number) => removeItem("relatos", i)} />}
   {active === "pipeline" && <ContentPipelinePanel content={content} onApply={(nextContent, message) => { setContent(nextContent); setStatus(message); }} />}
   {active === "categories" && <CollectionManager title="Categorias" type="category" items={content.categories ?? []} content={content} uploadImage={uploadImage} groups={categoryGroups} onAdd={() => addItem("categories", emptyCategory(content.categories?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("categories", i, v)} onRemove={(i: number) => removeItem("categories", i)} />}
+  {active === "database" && <DatabasePanel />}
   {active === "timeline" && <CollectionManager title="Timeline" type="archive" items={content.timeline ?? []} content={content} uploadImage={uploadImage} groups={timelineGroups} onAdd={() => addItem("timeline", { year: "2026", title: "Novo evento", text: "Descrição do evento." })} onUpdate={(i: number, v: any) => updateArray("timeline", i, v)} onRemove={(i: number) => removeItem("timeline", i)} />}
   {active === "hero" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Publicação</span><h2>Hero principal</h2></div></div><div className="cmsEditorGrid"><div>{["eyebrow", "title", "subtitle", "description", "image", "primaryActionLabel", "secondaryActionLabel", "featuredArchiveSlug", "featuredTransmissionSlug", "featuredTransmissionYoutubeUrl"].map((f) => f === "image" ? <UploadField key={f} label={label(f)} value={content.hero?.[f] ?? ""} onChange={(v) => update(`hero.${f}`, v)} onUpload={uploadImage} /> : <TextField key={f} label={label(f)} value={content.hero?.[f] ?? ""} textarea={f === "description"} onChange={(v) => update(`hero.${f}`, v)} />)}<div className="cmsField"><span>Carrossel do Hero</span><p className="cmsHint">Marque “Exibir no Hero” nas transmissões para controlar o carrossel.</p></div></div><PreviewCard item={{ title: content.hero?.title, description: content.hero?.description, image: content.hero?.image, category: "Hero", status: "Ativo" }} type="Hero" /></div></div>}
   {active === "settings" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Sistema</span><h2>Configurações do site</h2></div></div><div className="cmsEditorGrid single"><div><TextField label="Título do site" value={content.site?.title} onChange={(v) => update("site.title", v)} /><TextField label="Tagline" value={content.site?.tagline} onChange={(v) => update("site.tagline", v)} /><TextField label="Descrição" value={content.site?.description} textarea onChange={(v) => update("site.description", v)} /><TextField label="E-mail de relatos" value={content.site?.emailRelatos} onChange={(v) => update("site.emailRelatos", v)} /><TextField label="URL YouTube" value={content.site?.youtubeUrl} onChange={(v) => update("site.youtubeUrl", v)} /><TextField label="URL Instagram" value={content.site?.instagramUrl} onChange={(v) => update("site.instagramUrl", v)} /></div></div></div>}

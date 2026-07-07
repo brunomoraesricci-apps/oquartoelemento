@@ -1,4 +1,4 @@
-import { getContent } from "@/lib/content";
+import { getContentAsync } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
@@ -10,6 +10,8 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { ShareBox } from "@/components/ShareBox";
 import { ReportModal } from "@/components/ReportModal";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 function localSlugify(value: string) {
   return value
@@ -24,17 +26,10 @@ function getArchiveSlug(item: any) {
   return item.slug || localSlugify(item.title || item.code || "arquivo");
 }
 
-export async function generateStaticParams() {
-  const content = getContent();
-
-  return (content.archives ?? []).map((archive: any) => ({
-    slug: getArchiveSlug(archive),
-  }));
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const content = getContent();
+  const content = await getContentAsync();
   const archive = (content.archives ?? []).find((item: any) =>
     getArchiveSlug(item) === slug ||
     item.code === slug ||
@@ -61,7 +56,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ArquivoDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const content = getContent();
+  const content = await getContentAsync();
 
   const archive = (content.archives ?? []).find((item: any) =>
     getArchiveSlug(item) === slug ||
@@ -86,7 +81,7 @@ export default async function ArquivoDetailPage({ params }: { params: Promise<{ 
       <BootScreen />
       <SideRail />
       <div className="siteShell">
-        <Navbar email={content.site.emailRelatos} sections={content.sections} />
+        <Navbar email={content.site.emailRelatos} sections={content.sections} contentData={content} />
 
         <main>
           <Breadcrumb items={[
@@ -204,7 +199,7 @@ export default async function ArquivoDetailPage({ params }: { params: Promise<{ 
           )}
         </main>
 
-        <Footer email={content.site.emailRelatos} />
+        <Footer email={content.site.emailRelatos} categories={content.categories} />
       </div>
     </>
   );
