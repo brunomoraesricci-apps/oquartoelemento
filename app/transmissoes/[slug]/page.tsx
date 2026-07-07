@@ -77,10 +77,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   return buildMetadata({
-    title: `${transmission.title} | Transmissão Classificada`,
-    description: transmission.description ?? "Transmissão catalogada no arquivo audiovisual do Quarto Elemento.",
+    title: transmission.seoTitle || `${transmission.title} | Transmissão Classificada`,
+    description: transmission.seoDescription || transmission.description || "Transmissão catalogada no arquivo audiovisual do Quarto Elemento.",
     path: `/transmissoes/${slug}`,
-    image: transmission.image ?? "/images/banner-wide.png",
+    image: transmission.ogImage || transmission.image || "/images/banner-wide.png",
     keywords: [transmission.category, transmission.location, transmission.year, ...(transmission.tags ?? [])].filter(Boolean),
   });
 }

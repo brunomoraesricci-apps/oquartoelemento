@@ -51,10 +51,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   return buildMetadata({
-    title: `${archive.title} | Dossiê Desclassificado`,
-    description: archive.summary ?? archive.description ?? "Dossiê investigativo catalogado no Arquivo Digital do Quarto Elemento.",
+    title: archive.seoTitle || `${archive.title} | Dossiê Desclassificado`,
+    description: archive.seoDescription || archive.summary || archive.description || "Dossiê investigativo catalogado no Arquivo Digital do Quarto Elemento.",
     path: `/arquivos/${slug}`,
-    image: archive.image ?? "/images/banner-wide.png",
+    image: archive.ogImage || archive.image || "/images/banner-wide.png",
     keywords: [archive.code, archive.category, archive.location, archive.year, archive.classification, ...(archive.tags ?? [])].filter(Boolean),
   });
 }

@@ -3,13 +3,14 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 import fs from "fs";
 import path from "path";
+import { normalizeContent } from "@/lib/contentModel";
 
 const contentPath = path.join(process.cwd(), "data", "content.json");
 
 export async function GET() {
   try {
     const raw = fs.readFileSync(contentPath, "utf-8");
-    return NextResponse.json(JSON.parse(raw));
+    return NextResponse.json(normalizeContent(JSON.parse(raw)));
   } catch (error) {
     return NextResponse.json({ error: "Unable to read content.json" }, { status: 500 });
   }
@@ -24,7 +25,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid content structure" }, { status: 400 });
     }
 
-    fs.writeFileSync(contentPath, JSON.stringify(body, null, 2), "utf-8");
+    const normalized = normalizeContent(body);
+    fs.writeFileSync(contentPath, JSON.stringify(normalized, null, 2), "utf-8");
 
     return NextResponse.json({
       ok: true,

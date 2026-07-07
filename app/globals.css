@@ -3630,3 +3630,90 @@ main{position:relative;z-index:3}
 /* v3 — Archive CMS */
 .cmsPage{width:min(1500px,94vw)}
 .cmsTop{display:flex;justify-content:space-between;gap:30px;align-items:flex-end;margin-bottom:26px}.cmsTop span,.cmsListHead span,.cmsEditorHead span,.cmsPreview>span,.cmsHeroSummary span{color:var(--red);text-transform:uppercase;font-size:11px;font-weight:900;letter-spacing:4px}.cmsTop h1{font-family:Cinzel,serif;color:var(--gold2);font-size:48px;margin:12px 0 8px}.cmsTop p{color:#c7b59a}.cmsTopActions{display:flex;gap:10px;flex-wrap:wrap}.cmsShell{display:grid;grid-template-columns:260px 1fr;gap:24px}.cmsSidebar{padding:16px;align-self:start;position:sticky;top:20px}.cmsSidebar button{width:100%;display:block;text-align:left;border:1px solid transparent;background:transparent;color:var(--gold);padding:13px 14px;text-transform:uppercase;font-weight:900;letter-spacing:1.5px;cursor:pointer}.cmsSidebar button.active,.cmsSidebar button:hover{border-color:rgba(216,54,36,.55);background:rgba(216,54,36,.10);color:var(--gold2)}.cmsManager{display:grid;grid-template-columns:360px 1fr;gap:20px}.cmsList,.cmsEditor{padding:22px}.cmsListHead,.cmsEditorHead{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:18px}.cmsListHead h2,.cmsEditorHead h2,.cmsHeroSummary h2{font-family:Cinzel,serif;color:var(--gold2);margin:6px 0 0}.cmsSearch{width:100%;background:#070504;border:1px solid rgba(200,154,98,.20);color:var(--text);padding:13px 14px;margin-bottom:14px}.cmsItems{display:grid;gap:8px;max-height:680px;overflow:auto;padding-right:4px}.cmsItems button{text-align:left;border:1px solid rgba(200,154,98,.14);background:rgba(0,0,0,.22);padding:13px;cursor:pointer}.cmsItems button.active,.cmsItems button:hover{border-color:rgba(216,54,36,.64);background:rgba(216,54,36,.08)}.cmsItems span{color:var(--red);font-family:"Courier New",monospace;font-size:10px;letter-spacing:1.4px}.cmsItems b{display:block;color:var(--gold2);margin:4px 0}.cmsItems small{color:#9f866a;text-transform:uppercase;font-size:10px;letter-spacing:1px}.cmsEditorGrid{display:grid;grid-template-columns:1fr 360px;gap:22px}.cmsEditorGrid.single{grid-template-columns:1fr}.cmsField{display:block;margin-bottom:14px}.cmsField>span,.cmsCheck span{display:block;color:var(--red);text-transform:uppercase;font-size:11px;font-weight:900;letter-spacing:2px;margin-bottom:7px}.cmsField input,.cmsField textarea,.cmsField select,.jsonEditor{width:100%;background:#070504;border:1px solid rgba(200,154,98,.22);color:var(--text);padding:13px 14px;font-family:Inter,Arial,sans-serif}.cmsField textarea{min-height:120px;resize:vertical}.cmsField select{cursor:pointer}.cmsField input:focus,.cmsField textarea:focus,.cmsField select:focus,.jsonEditor:focus{outline:1px solid rgba(216,54,36,.68);border-color:rgba(216,54,36,.68)}.cmsCheck{display:flex;align-items:center;gap:12px;border:1px solid rgba(200,154,98,.18);padding:13px;margin:14px 0}.cmsCheck input{width:18px;height:18px;accent-color:#b3261e}.cmsCheck span{margin:0}.tagEditor{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}.tagEditor button{border:1px solid rgba(200,154,98,.22);background:rgba(200,154,98,.06);color:var(--gold);padding:7px 9px;cursor:pointer}.tagInput{display:grid;grid-template-columns:1fr auto;gap:8px}.tagInput button,.uploadButton{border:1px solid rgba(200,154,98,.22);background:rgba(0,0,0,.22);color:var(--gold2);padding:11px 14px;cursor:pointer;text-transform:uppercase;font-size:11px;font-weight:900}.uploadPreview{height:190px;border:1px solid rgba(200,154,98,.16);background:#050302;display:grid;place-items:center;margin-bottom:8px;overflow:hidden;color:#9f866a;font-family:"Courier New",monospace}.uploadPreview img{width:100%;height:100%;object-fit:cover}.uploadButton{display:inline-block;margin-top:8px}.uploadButton input{display:none}.cmsPreview{padding:18px;align-self:start;position:sticky;top:20px}.cmsPreviewImage{height:210px;margin:14px 0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.68)),var(--img);background-size:cover;background-position:center;border:1px solid rgba(200,154,98,.15)}.cmsPreview h3{font-family:Cinzel,serif;color:var(--gold2);margin:0 0 8px}.cmsPreview p{color:#c7b59a;line-height:1.5}.jsonEditor{min-height:680px;font-family:"Courier New",monospace;font-size:12px}.cmsHeroSummary,.adminQuickPanel{padding:24px;margin-top:20px}.cmsHeroSummary p,.adminQuickPanel p{color:#c7b59a}.cmsHint{color:#a99374;line-height:1.5;margin:0}.danger{border-color:rgba(216,54,36,.55)!important;color:#ffb4a8!important}@media(max-width:1200px){.cmsShell,.cmsManager,.cmsEditorGrid{grid-template-columns:1fr}.cmsSidebar,.cmsPreview{position:static}}@media(max-width:700px){.cmsTop{flex-direction:column;align-items:flex-start}}
+
+/* v3.4 — Content Studio */
+.cmsTopActions .btn:disabled,.cmsAutomationPanel .btn:disabled{opacity:.52;cursor:not-allowed;filter:grayscale(.3)}
+.cmsNavGroup{border-bottom:1px solid rgba(200,154,98,.12);padding:10px 0 14px;margin-bottom:8px}.cmsNavGroup:last-child{border-bottom:0;margin-bottom:0}.cmsNavGroup>span{display:block;color:var(--red);text-transform:uppercase;font-size:10px;font-weight:900;letter-spacing:3px;margin:0 0 8px 12px}.cmsAccordion{border:1px solid rgba(200,154,98,.16);background:rgba(0,0,0,.16);margin-bottom:12px}.cmsAccordion summary{list-style:none;display:flex;justify-content:space-between;gap:20px;align-items:center;cursor:pointer;padding:16px 18px}.cmsAccordion summary::-webkit-details-marker{display:none}.cmsAccordion summary b{display:block;color:var(--gold2);font-family:Cinzel,serif;font-size:18px}.cmsAccordion summary small{display:block;color:#9f866a;margin-top:4px;line-height:1.4}.cmsAccordion summary>span{color:var(--red);font-size:10px;font-weight:900;letter-spacing:2px}.cmsAccordion[open] summary{border-bottom:1px solid rgba(200,154,98,.12);background:rgba(216,54,36,.06)}.cmsAccordion[open] summary>span{color:var(--gold)}.cmsAccordionBody{padding:18px}.cmsRightRail{display:grid;gap:16px;align-self:start;position:sticky;top:20px}.cmsRightRail .cmsPreview{position:static}.cmsAutomationPanel{padding:18px}.cmsAutomationPanel span{color:var(--red);text-transform:uppercase;font-size:11px;font-weight:900;letter-spacing:4px}.cmsAutomationPanel h3{font-family:Cinzel,serif;color:var(--gold2);margin:8px 0}.cmsAutomationPanel p{color:#c7b59a;line-height:1.55;margin-bottom:14px}.devHint{margin:0 0 14px}.adminStatus{margin-top:16px;color:var(--gold2);font-weight:800;letter-spacing:.5px}
+@media(max-width:1200px){.cmsRightRail{position:static}}
+
+/* v4.0 — Content Pipeline */
+.pipelineGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.55fr);
+  gap: 18px;
+  align-items: start;
+}
+.packageImporter,
+.packagePreview {
+  padding: 20px;
+}
+.packageEditor {
+  width: 100%;
+  min-height: 560px;
+  resize: vertical;
+  margin-top: 16px;
+  border: 1px solid rgba(197, 161, 86, 0.25);
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(244, 226, 187, 0.92);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 16px;
+  outline: none;
+  box-shadow: inset 0 0 22px rgba(0,0,0,0.55);
+}
+.packageEditor:focus {
+  border-color: rgba(176, 25, 38, 0.7);
+}
+.packageActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.packagePreview h3 {
+  margin: 8px 0 14px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.packageCounts p,
+.packageErrors p {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0;
+  color: rgba(244, 226, 187, 0.72);
+}
+.packageBlockList {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+.packageBlockList > div {
+  border: 1px solid rgba(197, 161, 86, 0.18);
+  background: rgba(255,255,255,0.03);
+  padding: 12px;
+}
+.packageBlockList small,
+.packagePreview > span {
+  display: block;
+  color: rgba(197, 161, 86, 0.82);
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  font-size: 10px;
+}
+.packageBlockList b {
+  display: block;
+  margin-top: 4px;
+  color: rgba(244, 226, 187, 0.92);
+}
+.packageApplied {
+  margin-top: 18px;
+  border: 1px solid rgba(40, 160, 90, 0.35);
+  background: rgba(40, 160, 90, 0.08);
+  padding: 12px;
+  color: rgba(220,255,230,0.9);
+}
+@media (max-width: 1100px) {
+  .pipelineGrid { grid-template-columns: 1fr; }
+}

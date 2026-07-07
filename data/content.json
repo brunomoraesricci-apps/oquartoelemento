@@ -22,7 +22,16 @@
       "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
       "slug": "ovnis-e-fenomenos",
       "description": "Arquivos relacionados a OVNIs e Fenômenos.",
-      "active": true
+      "active": true,
+      "seoTitle": "OVNIs e Fenômenos",
+      "seoDescription": "Arquivos relacionados a OVNIs e Fenômenos.",
+      "ogImage": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "status": "Publicado",
+      "order": 1
     },
     {
       "title": "Desaparecimentos",
@@ -30,7 +39,16 @@
       "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80",
       "slug": "desaparecimentos",
       "description": "Arquivos relacionados a Desaparecimentos.",
-      "active": true
+      "active": true,
+      "seoTitle": "Desaparecimentos",
+      "seoDescription": "Arquivos relacionados a Desaparecimentos.",
+      "ogImage": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "status": "Publicado",
+      "order": 2
     },
     {
       "title": "Lendas e Mitos",
@@ -38,7 +56,16 @@
       "image": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=1200&q=80",
       "slug": "lendas-e-mitos",
       "description": "Arquivos relacionados a Lendas e Mitos.",
-      "active": true
+      "active": true,
+      "seoTitle": "Lendas e Mitos",
+      "seoDescription": "Arquivos relacionados a Lendas e Mitos.",
+      "ogImage": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "status": "Publicado",
+      "order": 3
     },
     {
       "title": "Civilizações Perdidas",
@@ -46,7 +73,16 @@
       "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80",
       "slug": "civilizacoes-perdidas",
       "description": "Arquivos relacionados a Civilizações Perdidas.",
-      "active": true
+      "active": true,
+      "seoTitle": "Civilizações Perdidas",
+      "seoDescription": "Arquivos relacionados a Civilizações Perdidas.",
+      "ogImage": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "status": "Publicado",
+      "order": 4
     },
     {
       "title": "Relatos Proibidos",
@@ -54,7 +90,16 @@
       "image": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=1200&q=80",
       "slug": "relatos-proibidos",
       "description": "Arquivos relacionados a Relatos Proibidos.",
-      "active": true
+      "active": true,
+      "seoTitle": "Relatos Proibidos",
+      "seoDescription": "Arquivos relacionados a Relatos Proibidos.",
+      "ogImage": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "status": "Publicado",
+      "order": 5
     },
     {
       "title": "Deep Web",
@@ -62,7 +107,16 @@
       "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80",
       "slug": "deep-web",
       "description": "Arquivos relacionados a Deep Web.",
-      "active": true
+      "active": true,
+      "seoTitle": "Deep Web",
+      "seoDescription": "Arquivos relacionados a Deep Web.",
+      "ogImage": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "status": "Publicado",
+      "order": 6
     },
     {
       "title": "Relatos",
@@ -70,7 +124,16 @@
       "symbol": "◇",
       "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
       "description": "Relatos enviados pela comunidade e relacionados a publicações do canal.",
-      "active": true
+      "active": true,
+      "seoTitle": "Relatos",
+      "seoDescription": "Relatos enviados pela comunidade e relacionados a publicações do canal.",
+      "ogImage": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "status": "Publicado",
+      "order": 7
     }
   ],
   "featuredCase": {
@@ -107,7 +170,15 @@
       "location": "Arquivo Digital",
       "status": "Publicado",
       "showInHero": true,
-      "heroOrder": 1
+      "heroOrder": 1,
+      "seoTitle": "O Mistério de Dyatlov Pass",
+      "seoDescription": "Abrir transmissão no arquivo.",
+      "ogImage": "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedReportCodes": []
     },
     {
       "code": "QE-V-022",
@@ -134,7 +205,15 @@
       "location": "Arquivo Digital",
       "status": "Publicado",
       "showInHero": true,
-      "heroOrder": 2
+      "heroOrder": 2,
+      "seoTitle": "Top 10 Mistérios Brasileiros",
+      "seoDescription": "Abrir transmissão no arquivo.",
+      "ogImage": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedReportCodes": []
     },
     {
       "code": "QE-V-023",
@@ -161,7 +240,15 @@
       "location": "Arquivo Digital",
       "status": "Publicado",
       "showInHero": true,
-      "heroOrder": 3
+      "heroOrder": 3,
+      "seoTitle": "A Ilha da Trindade e o OVNI",
+      "seoDescription": "Abrir transmissão no arquivo.",
+      "ogImage": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedReportCodes": []
     },
     {
       "code": "QE-V-024",
@@ -188,7 +275,15 @@
       "location": "Arquivo Digital",
       "status": "Publicado",
       "showInHero": true,
-      "heroOrder": 4
+      "heroOrder": 4,
+      "seoTitle": "As Máscaras de Chumbo de Niterói",
+      "seoDescription": "Abrir transmissão no arquivo.",
+      "ogImage": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedReportCodes": []
     }
   ],
   "relatos": [
@@ -208,7 +303,16 @@
         "Arquivo"
       ],
       "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
-      "youtubeUrl": ""
+      "youtubeUrl": "",
+      "seoTitle": "Aceitei um Contrato Exclusivo",
+      "seoDescription": "Relato #027",
+      "ogImage": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchiveSlug": "",
+      "relatedTransmissionSlug": ""
     },
     {
       "code": "RP-026",
@@ -226,7 +330,16 @@
         "Arquivo"
       ],
       "image": "/images/identity-alt.png",
-      "youtubeUrl": ""
+      "youtubeUrl": "",
+      "seoTitle": "A Vigia da Escola",
+      "seoDescription": "Relato #026",
+      "ogImage": "/images/identity-alt.png",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchiveSlug": "",
+      "relatedTransmissionSlug": ""
     },
     {
       "code": "RP-025",
@@ -244,7 +357,16 @@
         "Arquivo"
       ],
       "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
-      "youtubeUrl": ""
+      "youtubeUrl": "",
+      "seoTitle": "O Médico da Ala B",
+      "seoDescription": "Relato #025",
+      "ogImage": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchiveSlug": "",
+      "relatedTransmissionSlug": ""
     },
     {
       "code": "RP-024",
@@ -262,7 +384,16 @@
         "Arquivo"
       ],
       "image": "/images/identity-alt.png",
-      "youtubeUrl": ""
+      "youtubeUrl": "",
+      "seoTitle": "A Luz Sobre a Rodovia",
+      "seoDescription": "Relato #024",
+      "ogImage": "/images/identity-alt.png",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchiveSlug": "",
+      "relatedTransmissionSlug": ""
     },
     {
       "code": "RP-023",
@@ -280,7 +411,16 @@
         "Arquivo"
       ],
       "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
-      "youtubeUrl": ""
+      "youtubeUrl": "",
+      "seoTitle": "O Sinal Depois da Meia-Noite",
+      "seoDescription": "Relato #023",
+      "ogImage": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchiveSlug": "",
+      "relatedTransmissionSlug": ""
     },
     {
       "code": "RP-022",
@@ -298,7 +438,16 @@
         "Arquivo"
       ],
       "image": "/images/identity-alt.png",
-      "youtubeUrl": ""
+      "youtubeUrl": "",
+      "seoTitle": "A Casa que Não Aparecia no Mapa",
+      "seoDescription": "Relato #022",
+      "ogImage": "/images/identity-alt.png",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchiveSlug": "",
+      "relatedTransmissionSlug": ""
     }
   ],
   "timeline": [
@@ -355,7 +504,16 @@
       "QE-003"
     ],
     "year": "2026",
-    "location": "Arquivo Digital"
+    "location": "Arquivo Digital",
+    "seoTitle": "Top 10 Desaparecimentos Mais Misteriosos",
+    "seoDescription": "Um dossiê cinematográfico com casos que atravessaram décadas e continuam deixando perguntas sem resposta.",
+    "ogImage": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+    "aiGenerated": false,
+    "aiReviewed": false,
+    "aiNotes": "",
+    "aiSourceUrl": "",
+    "relatedReportCodes": [],
+    "status": "Publicado"
   },
   "archives": [
     {
@@ -413,7 +571,16 @@
       "gallery": [
         "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80"
       ],
-      "views": 9040
+      "views": 9040,
+      "seoTitle": "Operação Prato",
+      "seoDescription": "A maior investigação ufológica oficial do Brasil.",
+      "ogImage": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchives": [],
+      "relatedReportCodes": []
     },
     {
       "code": "QE-002",
@@ -470,7 +637,16 @@
       "gallery": [
         "https://images.unsplash.com/photo-1477601263568-180e2c6d046e?auto=format&fit=crop&w=1200&q=80"
       ],
-      "views": 8280
+      "views": 8280,
+      "seoTitle": "Passo de Dyatlov",
+      "seoDescription": "Nove excursionistas, uma morte misteriosa e muitas teorias.",
+      "ogImage": "https://images.unsplash.com/photo-1477601263568-180e2c6d046e?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchives": [],
+      "relatedReportCodes": []
     },
     {
       "code": "QE-003",
@@ -527,7 +703,16 @@
       "gallery": [
         "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
       ],
-      "views": 7520
+      "views": 7520,
+      "seoTitle": "Incidente de Ubatuba",
+      "seoDescription": "Fragmentos metálicos, testemunhas e uma história cercada de dúvidas.",
+      "ogImage": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchives": [],
+      "relatedReportCodes": []
     },
     {
       "code": "QE-004",
@@ -584,7 +769,16 @@
       "gallery": [
         "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1200&q=80"
       ],
-      "views": 6760
+      "views": 6760,
+      "seoTitle": "Noite Oficial dos OVNIs",
+      "seoDescription": "A noite em que objetos não identificados foram perseguidos por caças da Força Aérea Brasileira.",
+      "ogImage": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchives": [],
+      "relatedReportCodes": []
     },
     {
       "code": "QE-005",
@@ -641,7 +835,16 @@
       "gallery": [
         "https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=1200&q=80"
       ],
-      "views": 6000
+      "views": 6000,
+      "seoTitle": "Máscaras de Chumbo",
+      "seoDescription": "Dois homens encontrados mortos em uma colina, usando máscaras de chumbo e cercados por bilhetes enigmáticos.",
+      "ogImage": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchives": [],
+      "relatedReportCodes": []
     },
     {
       "code": "QE-006",
@@ -698,7 +901,16 @@
       "gallery": [
         "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80"
       ],
-      "views": 5240
+      "views": 5240,
+      "seoTitle": "Pedra do Ingá",
+      "seoDescription": "Inscrições misteriosas gravadas em pedra, interpretadas por alguns como vestígios de uma civilização perdida.",
+      "ogImage": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80",
+      "aiGenerated": false,
+      "aiReviewed": false,
+      "aiNotes": "",
+      "aiSourceUrl": "",
+      "relatedArchives": [],
+      "relatedReportCodes": []
     }
   ],
   "sections": {
@@ -906,5 +1118,12 @@
       "a-ilha-da-trindade-e-o-ovni",
       "as-mascaras-de-chumbo-de-niteroi"
     ]
+  },
+  "schemaVersion": "3.3.0",
+  "automation": {
+    "enabled": false,
+    "provider": "manual",
+    "lastRunAt": "",
+    "notes": "Campos preparados para futura automação com IA no Admin."
   }
 }
