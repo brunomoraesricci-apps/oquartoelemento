@@ -75,7 +75,7 @@ const categoryGroups: FieldGroup[] = [
 ];
 
 const timelineGroups: FieldGroup[] = [
-  { title: "Evento cronológico", fields: ["year", "title", "text"], defaultOpen: true },
+  { title: "Evento cronológico", fields: ["year", "title", "text", "archiveSlug", "contentSlug", "contentType", "eventType", "precision", "isAuto"], defaultOpen: true },
 ];
 
 function slugify(value: string) {
@@ -89,7 +89,7 @@ function label(field: string) {
     tags: "Tags", location: "Local", year: "Ano", subtitle: "Subtítulo", classification: "Classificação",
     accessLevel: "Nível de acesso", relatedTransmissionSlug: "Transmissão relacionada", showInHero: "Exibir no Hero",
     heroOrder: "Ordem no Hero", emailRelatos: "E-mail de relatos", youtubeUrlSite: "URL YouTube", instagramUrl: "URL Instagram",
-    text: "Texto", eyebrow: "Texto superior", primaryActionLabel: "Botão principal", secondaryActionLabel: "Botão secundário",
+    text: "Texto", contentSlug: "Conteúdo relacionado", eventType: "Tipo de evento", precision: "Precisão", isAuto: "Gerado automaticamente", eyebrow: "Texto superior", primaryActionLabel: "Botão principal", secondaryActionLabel: "Botão secundário",
     featuredArchiveSlug: "Arquivo destaque", featuredTransmissionSlug: "Transmissão destaque", featuredTransmissionYoutubeUrl: "YouTube destaque",
     seoTitle: "SEO: título", seoDescription: "SEO: descrição", ogImage: "OpenGraph: imagem", aiNotes: "IA: notas para automação", aiSourceUrl: "IA: URL fonte", aiGenerated: "Gerado por IA", aiReviewed: "Revisado",
     relatedArchives: "Arquivos relacionados", relatedReportCodes: "Relatos relacionados", relatedArchiveSlug: "Arquivo relacionado", active: "Categoria ativa", order: "Ordem", symbol: "Símbolo", videoId: "YouTube Video ID", embedUrl: "YouTube Embed URL", sourceProvider: "Fonte", sourceUrl: "URL original"
@@ -364,7 +364,19 @@ function blockToContent(block: QePackageBlock, content: any) {
       active: getField(data, "active") ?? true,
     };
   }
-  if (block.type === "TIMELINE") return { year: getField(data, "year") ?? "2026", title: getField(data, "title") ?? "Novo evento", text: getField(data, "text", "description") ?? "Evento importado via pacote." };
+  if (block.type === "TIMELINE") return {
+    year: getField(data, "year") ?? "2026",
+    title: getField(data, "title") ?? "Novo evento",
+    text: getField(data, "text", "description") ?? "Evento importado via pacote.",
+    description: getField(data, "text", "description") ?? "Evento importado via pacote.",
+    archiveSlug: getField(data, "archive_slug", "archiveSlug") ?? "",
+    contentSlug: getField(data, "content_slug", "contentSlug", "related_transmission_slug") ?? "",
+    relatedTransmissionSlug: getField(data, "content_slug", "contentSlug", "related_transmission_slug") ?? "",
+    contentType: getField(data, "content_type", "contentType") ?? "transmissao",
+    eventType: getField(data, "event_type", "eventType") ?? "publication",
+    precision: getField(data, "precision") ?? "year",
+    isAuto: String(getField(data, "is_auto", "isAuto") ?? "true").toLowerCase() !== "false",
+  };
   if (block.type === "HERO") return { title: getField(data, "title"), subtitle: getField(data, "subtitle"), description: getField(data, "description"), image: getField(data, "image"), featuredArchiveSlug: getField(data, "featured_archive", "featured_archive_slug"), featuredTransmissionSlug: getField(data, "featured_transmission", "featured_transmission_slug"), featuredTransmissionYoutubeUrl: getField(data, "youtube", "youtube_url") };
   return null;
 }
@@ -827,7 +839,7 @@ function YouTubeIntelligencePanel({ content, onApply }: { content: any; onApply:
       return;
     }
 
-    const pkg = `QE_PACKAGE_VERSION: 1.1
+    const pkg = `QE_PACKAGE_VERSION: 1.3
 
 TRANSMISSION
 CODE: ${nextTransmissionCode}
@@ -884,7 +896,20 @@ SEO_TITLE: ${safeTitle} | Dossiê | O Quarto Elemento
 SEO_DESCRIPTION: Dossiê investigativo relacionado à transmissão ${safeTitle}.
 AI_NOTES:
 Arquivo/dossiê inicial gerado automaticamente pela Auto Dossier Generation v6.2. Revisar conteúdo antes de publicar.
-END_ARCHIVE` : ""}`;
+END_ARCHIVE` : ""}
+
+TIMELINE
+YEAR: ${year}
+TITLE: ${safeTitle}
+DESCRIPTION:
+Publicação catalogada no Arquivo Digital do Quarto Elemento a partir da fonte YouTube. Este evento foi gerado automaticamente e pode ser enriquecido manualmente depois.
+ARCHIVE_SLUG: ${archiveSlug}
+CONTENT_SLUG: ${slug}
+CONTENT_TYPE: ${contentType}
+EVENT_TYPE: publication
+PRECISION: year
+IS_AUTO: true
+END_TIMELINE`;
 
     setPackageText(pkg);
     setLocalStatus("✅ Publicação gerada. Revise o pacote antes de aplicar.");
@@ -904,7 +929,7 @@ END_ARCHIVE` : ""}`;
   return <div className="pipelineGrid youtubeIntelligenceGrid">
     <section className="terminalPanel packageImporter">
       <div className="cmsEditorHead"><div><span>QE YouTube Intelligence</span><h2>Nova publicação por URL</h2></div></div>
-      <p className="cmsHint">Cole a URL do YouTube para gerar um rascunho editorial estruturado. Esta fundação v6.2 cria o vídeo e também o dossiê relacionado a partir da mesma URL, evitando double-input no acervo.</p>
+      <p className="cmsHint">Cole a URL do YouTube para gerar um rascunho editorial estruturado. Esta fundação v7.1 cria vídeo, dossiê e evento inicial de timeline a partir da mesma URL, evitando double-input no acervo.</p>
       <div className="cmsEditorGrid single">
         <div>
           <TextField label="URL do YouTube" value={youtubeUrl} onChange={setYoutubeUrl} />
@@ -918,9 +943,9 @@ END_ARCHIVE` : ""}`;
           <label className="cmsField resetCheckbox"><span>Hero</span><label><input type="checkbox" checked={showInHero} onChange={(e) => setShowInHero(e.target.checked)} /> Sugerir transmissão no carrossel principal</label></label>
         </div>
       </div>
-      <div className="packageActions"><button className="btn btnRed" type="button" onClick={buildPackage}>Gerar publicação + dossiê</button><button className="btn" type="button" onClick={applyGenerated} disabled={!packageText.trim()}>Aplicar localmente</button></div>
+      <div className="packageActions"><button className="btn btnRed" type="button" onClick={buildPackage}>Gerar publicação + dossiê + timeline</button><button className="btn" type="button" onClick={applyGenerated} disabled={!packageText.trim()}>Aplicar localmente</button></div>
       {localStatus && <div className={localStatus.startsWith("❌") ? "packageErrors" : "packageApplied"}><p>{localStatus}</p></div>}
-      <textarea className="packageEditor" value={packageText} placeholder="O QE Package v1.2 com vídeo + dossiê aparecerá aqui..." onChange={(e) => setPackageText(e.target.value)} />
+      <textarea className="packageEditor" value={packageText} placeholder="O QE Package v1.3 com vídeo + dossiê + timeline aparecerá aqui..." onChange={(e) => setPackageText(e.target.value)} />
     </section>
     <aside className="terminalPanel packagePreview youtubeIntelligencePreview">
       <span>Source + Dossier Intelligence</span>
@@ -929,7 +954,7 @@ END_ARCHIVE` : ""}`;
       {thumbnail && <PreviewCard item={{ title: safeTitle, description, image: thumbnail, category: effectiveCategory, status }} type={contentType === "relato" ? "Relato YouTube" : "YouTube"} />}
       {thumbs.length > 0 && <div className="sourceThumbList"><b>Thumbnails públicas</b>{thumbs.map((thumb) => <a key={thumb.label} href={thumb.url} target="_blank" rel="noreferrer">{thumb.label}</a>)}</div>}
       {embedUrl && <div className="embedPreview"><iframe src={embedUrl} title="YouTube preview" allowFullScreen /></div>}
-      <div className="packageErrors"><b>Limite da v6.0</b><p>Esta versão não consulta a API oficial do YouTube. O foco da v6.2 é transformar uma única URL em vídeo + arquivo/dossiê vinculados. Metadados reais entram na próxima etapa com YouTube Data API.</p></div>
+      <div className="packageErrors"><b>Limite da v6.0</b><p>Esta versão não consulta a API oficial do YouTube. O foco da v7.1 é transformar uma única URL em vídeo + arquivo/dossiê + evento de timeline vinculados. Metadados reais entram na próxima etapa com YouTube Data API.</p></div>
     </aside>
   </div>;
 }
@@ -1297,5 +1322,5 @@ export default function AdminPage() {
   {active === "hero" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Publicação</span><h2>Hero principal</h2></div></div><div className="cmsEditorGrid"><div>{["eyebrow", "title", "subtitle", "description", "image", "primaryActionLabel", "secondaryActionLabel", "featuredArchiveSlug", "featuredTransmissionSlug", "featuredTransmissionYoutubeUrl"].map((f) => f === "image" ? <UploadField key={f} label={label(f)} value={content.hero?.[f] ?? ""} onChange={(v) => update(`hero.${f}`, v)} onUpload={uploadImage} /> : <TextField key={f} label={label(f)} value={content.hero?.[f] ?? ""} textarea={f === "description"} onChange={(v) => update(`hero.${f}`, v)} />)}<div className="cmsField"><span>Carrossel do Hero</span><p className="cmsHint">Marque “Exibir no Hero” nas transmissões para controlar o carrossel.</p></div></div><PreviewCard item={{ title: content.hero?.title, description: content.hero?.description, image: content.hero?.image, category: "Hero", status: "Ativo" }} type="Hero" /></div></div>}
   {active === "settings" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Sistema</span><h2>Configurações do site</h2></div></div><div className="cmsEditorGrid single"><div><TextField label="Título do site" value={content.site?.title} onChange={(v) => update("site.title", v)} /><TextField label="Tagline" value={content.site?.tagline} onChange={(v) => update("site.tagline", v)} /><TextField label="Descrição" value={content.site?.description} textarea onChange={(v) => update("site.description", v)} /><TextField label="E-mail de relatos" value={content.site?.emailRelatos} onChange={(v) => update("site.emailRelatos", v)} /><TextField label="URL YouTube" value={content.site?.youtubeUrl} onChange={(v) => update("site.youtubeUrl", v)} /><TextField label="URL Instagram" value={content.site?.instagramUrl} onChange={(v) => update("site.instagramUrl", v)} /></div></div></div>}
   {active === "json" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Modo desenvolvedor</span><h2>JSON completo</h2></div></div><p className="cmsHint devHint">Use apenas para conferência avançada, exportação ou correções pontuais. O Supabase agora é a fonte oficial do acervo; este JSON é somente exportação/fallback.</p><textarea className="jsonEditor" value={JSON.stringify(content, null, 2)} onChange={(e) => { try { setContent(JSON.parse(e.target.value)); } catch { setStatus("JSON inválido."); } }} /></div>}
-  </section></section><footer className="cmsVersionFooter">QE Content Studio · v7.0.0 · Knowledge Graph Foundation · Schema 005</footer></main>;
+  </section></section><footer className="cmsVersionFooter">QE Content Studio · v7.1.0 · Timeline Intelligence · Schema 006</footer></main>;
 }

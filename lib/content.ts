@@ -60,6 +60,11 @@ export function toPublicContent(content: any) {
   clone.archives = (clone.archives ?? []).filter((item: any) => isPublicStatus(item.status));
   clone.featuredTransmission = featured ?? publicVideos.find((item: any) => item.showInHero) ?? publicVideos[0] ?? null;
   clone.videos = publicVideos.filter((item: any) => item.slug !== clone.featuredTransmission?.slug);
+  const publicSlugs = new Set([clone.featuredTransmission, ...(clone.videos ?? []), ...(clone.archives ?? [])].filter(Boolean).map((item: any) => item.slug));
+  clone.timeline = (clone.timeline ?? []).filter((event: any) => {
+    const linked = event.contentSlug ?? event.relatedTransmissionSlug ?? event.archiveSlug;
+    return !linked || publicSlugs.has(linked);
+  });
   clone.relatos = [clone.featuredTransmission, ...(clone.videos ?? [])]
     .filter(Boolean)
     .filter((video: any) => isPublicStatus(video.status))

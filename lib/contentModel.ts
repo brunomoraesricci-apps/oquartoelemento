@@ -1,4 +1,4 @@
-export const CONTENT_SCHEMA_VERSION = "6.3.0";
+export const CONTENT_SCHEMA_VERSION = "7.1.0";
 
 export const CATEGORY_OPTIONS = [
   "OVNIs e Fenômenos",
@@ -122,6 +122,22 @@ export function normalizeContent(content: any) {
     relatedTransmissionSlug: archive.relatedTransmissionSlug ?? "",
     classification: archive.classification ?? "Confidencial",
     status: normalizeVisibilityStatus(archive.status),
+  }));
+
+  next.timeline = (next.timeline ?? []).map((event: any, index: number) => ({
+    ...event,
+    year: String(event.year ?? event.eventYear ?? new Date().getFullYear()),
+    title: event.title ?? "Evento do acervo",
+    text: event.text ?? event.description ?? "Evento catalogado automaticamente.",
+    description: event.description ?? event.text ?? "Evento catalogado automaticamente.",
+    archiveSlug: event.archiveSlug ?? event.archive_slug ?? "",
+    relatedTransmissionSlug: event.relatedTransmissionSlug ?? event.contentSlug ?? event.transmissionSlug ?? "",
+    contentSlug: event.contentSlug ?? event.relatedTransmissionSlug ?? event.transmissionSlug ?? "",
+    contentType: event.contentType ?? "transmissao",
+    eventType: event.eventType ?? "publication",
+    precision: event.precision ?? "year",
+    isAuto: event.isAuto !== false,
+    order: Number(event.order ?? event.sortOrder ?? index + 1),
   }));
 
   // Relatos agora são vídeos com contentType="relato". Mantemos next.relatos como visão derivada

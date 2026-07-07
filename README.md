@@ -1,4 +1,4 @@
-# O Quarto Elemento — v6.2 Auto Dossier Generation
+# O Quarto Elemento — v7.1 Timeline Intelligence
 
 Nova publicação por URL agora gera vídeo + arquivo/dossiê relacionado, evitando double-input no Content Studio.
 

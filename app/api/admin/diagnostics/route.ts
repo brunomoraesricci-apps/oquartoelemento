@@ -3,8 +3,8 @@ import { createSupabaseAdminClient, createSupabasePublicClient, getSupabaseConfi
 
 export const dynamic = "force-dynamic";
 
-const VERSION = "v7.0.0";
-const SCHEMA_VERSION = "005";
+const VERSION = "v7.1.0";
+const SCHEMA_VERSION = "006";
 
 type TableCheck = {
   table: string;
@@ -112,6 +112,7 @@ export async function GET() {
   if ((counts.qe_backups ?? 0) === 0 && checks.find((item) => item.table === "qe_backups")?.ok) recommendations.push("Nenhum backup registrado ainda. Um backup será criado no próximo salvamento/reset.");
   if ((counts.qe_sources ?? 0) === 0 && checks.find((item) => item.table === "qe_sources")?.ok) recommendations.push("Nenhuma source cadastrada ainda. Use Nova Publicação por URL para popular qe_sources.");
   if (!checks.find((item) => item.table === "qe_entities")?.ok) recommendations.push("Execute docs/SUPABASE_V7_0_KNOWLEDGE_GRAPH.sql para ativar as tabelas do Knowledge Graph.");
+  if (migrations.latest && !String(migrations.latest).startsWith("006")) recommendations.push("Execute docs/SUPABASE_V7_1_TIMELINE_INTELLIGENCE.sql para registrar a migração da Timeline Intelligence.");
   if (!recommendations.length) recommendations.push("Nenhuma pendência crítica detectada.");
 
   return NextResponse.json({

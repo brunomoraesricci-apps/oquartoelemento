@@ -44,14 +44,16 @@ export default async function LinhaDoTempoPage() {
 
           <section className="cinematicTimeline">
             {content.timeline.map((item: any, index: number) => {
-              const relatedArchive = archives[index % Math.max(1, archives.length)];
+              const relatedArchive =
+                archives.find((archive: any) => archive.slug === item.archiveSlug || archive.slug === item.contentSlug) ??
+                archives[index % Math.max(1, archives.length)];
 
               return (
-                <article className="timelineDossier" key={`${item.year}-${item.title}`}>
+                <article className="timelineDossier" key={`${item.year}-${item.title}-${index}`}>
                   <div className="timelineYear">{item.year}</div>
                   <div className="timelineConnector" />
                   <a className="timelineCard terminalPanel" href={relatedArchive ? `/arquivos/${relatedArchive.slug}` : "#"}>
-                    <span>REGISTRO // {String(index + 1).padStart(2, "0")}</span>
+                    <span>{item.isAuto ? "AUTO" : "REGISTRO"} // {String(index + 1).padStart(2, "0")}</span>
                     <h2>{item.title}</h2>
                     <p>{item.text}</p>
                     <b>{relatedArchive ? "Abrir arquivo relacionado →" : "Registro em análise"}</b>

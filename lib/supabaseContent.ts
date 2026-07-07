@@ -157,6 +157,11 @@ export function mapContentToSupabaseRows(content: any) {
     title: event.title ?? "",
     description: event.text ?? event.description ?? "",
     archive_slug: event.archiveSlug ?? "",
+    content_slug: event.contentSlug ?? event.relatedTransmissionSlug ?? "",
+    content_type: event.contentType ?? "",
+    event_type: event.eventType ?? "publication",
+    precision: event.precision ?? "year",
+    is_auto: event.isAuto !== false,
     sort_order: Number(event.order ?? index + 1),
     raw: event,
     updated_at: new Date().toISOString(),
@@ -383,6 +388,12 @@ function timelineFromRow(row: any, index: number) {
     text: row.description ?? row.raw?.text ?? row.raw?.description ?? "",
     description: row.description ?? row.raw?.description ?? "",
     archiveSlug: row.archive_slug ?? row.raw?.archiveSlug ?? "",
+    contentSlug: row.content_slug ?? row.raw?.contentSlug ?? row.raw?.relatedTransmissionSlug ?? "",
+    relatedTransmissionSlug: row.content_slug ?? row.raw?.relatedTransmissionSlug ?? "",
+    contentType: row.content_type ?? row.raw?.contentType ?? "",
+    eventType: row.event_type ?? row.raw?.eventType ?? "publication",
+    precision: row.precision ?? row.raw?.precision ?? "year",
+    isAuto: row.is_auto ?? row.raw?.isAuto ?? false,
     order: row.sort_order ?? row.raw?.order ?? index + 1,
   };
 }
@@ -426,7 +437,7 @@ export async function readContentFromSupabase() {
   const featuredArchive = settingValue(settings, "featuredArchive", null) ?? archives[0] ?? {};
 
   const content = {
-    schemaVersion: "6.3.0",
+    schemaVersion: "7.1.0",
     site: settingValue(settings, "site", {}),
     hero: settingValue(settings, "hero", {}),
     sections: settingValue(settings, "sections", {}),
