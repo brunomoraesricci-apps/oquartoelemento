@@ -1,47 +1,10 @@
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-import fs from "fs";
-import path from "path";
+
 import { normalizeContent } from "@/lib/contentModel";
 import { getContentAsync } from "@/lib/content";
-import { importContentIntoSupabase } from "@/lib/supabaseContent";
-
-const contentPath = path.join(process.cwd(), "data", "content.json");
-const backupsDir = path.join(process.cwd(), "data", "backups");
-
-type LocalWriteResult = {
-  ok: boolean;
-  backupFile: string | null;
-  warning?: string;
-};
-
-function ensureBackupsDir() {
-  if (!fs.existsSync(backupsDir)) fs.mkdirSync(backupsDir, { recursive: true });
-}
-
-function createBackup(reason = "manual-save") {
-  if (!fs.existsSync(contentPath)) return null;
-  ensureBackupsDir();
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const backupPath = path.join(backupsDir, `content-${timestamp}-${reason}.json`);
-  fs.copyFileSync(contentPath, backupPath);
-  return path.basename(backupPath);
-}
-
-function tryWriteLocalJson(content: any): LocalWriteResult {
-  try {
-    const backupFile = createBackup("before-hybrid-write");
-    fs.writeFileSync(contentPath, JSON.stringify(content, null, 2), "utf-8");
-    return { ok: true, backupFile };
-  } catch (error: any) {
-    return {
-      ok: false,
-      backupFile: null,
-      warning: error?.message ?? "Não foi possível salvar content.json localmente.",
-    };
-  }
-}
+import { createSupabaseBackup, importContentIntoSupabase } from "@/lib/supabaseContent";
 
 export async function GET() {
   try {
@@ -76,9 +39,9 @@ export async function POST(request: Request) {
       videos: body?.videos?.length ?? 0,
       archives: body?.archives?.length ?? 0,
       reports: body?.relatos?.length ?? 0,
+      timeline: body?.timeline?.length ?? 0,
     });
 
-    // Basic validation to avoid saving an empty/wrong file accidentally.
     if (!body?.site || !Array.isArray(body?.categories) || !Array.isArray(body?.videos)) {
       return NextResponse.json({
         ok: false,
@@ -89,21 +52,24 @@ export async function POST(request: Request) {
 
     const normalized = normalizeContent(body);
 
-    // v5.2.1: Supabase remains primary, but now returns detailed diagnostics.
+    // v5.3: Supabase is now the primary editorial store. JSON remains read-only fallback.
+    const databaseBackup = await createSupabaseBackup(normalized, "before-supabase-first-save");
     const supabaseResults = await importContentIntoSupabase(normalized);
-    const localWrite = tryWriteLocalJson(normalized);
 
     return NextResponse.json({
       ok: true,
       savedAt: new Date().toISOString(),
       durationMs: Date.now() - startedAt,
-      mode: "hybrid-write-debug",
+      mode: "supabase-first",
       primaryTarget: "supabase",
-      fallbackTarget: "json",
+      fallbackTarget: "json-readonly",
       supabaseResults,
-      backupFile: localWrite.backupFile,
-      localJsonSaved: localWrite.ok,
-      warning: localWrite.warning,
+      backup: databaseBackup,
+      backupFile: databaseBackup?.ok ? databaseBackup.id : null,
+      localJsonSaved: false,
+      warning: databaseBackup?.ok
+        ? undefined
+        : `Backup em banco não criado: ${databaseBackup?.error ?? databaseBackup?.reason ?? "motivo desconhecido"}`,
     });
   } catch (error: any) {
     const payload = serializeSaveError(error);

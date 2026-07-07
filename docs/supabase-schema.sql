@@ -134,6 +134,19 @@ create table if not exists public.qe_site_settings (
   updated_at timestamptz default now()
 );
 
+
+-- v5.3: database-native editorial backups.
+create table if not exists public.qe_backups (
+  id uuid primary key default gen_random_uuid(),
+  reason text default 'manual-save',
+  snapshot jsonb not null,
+  summary jsonb default '{}'::jsonb,
+  created_by text default 'content-studio',
+  created_at timestamptz default now()
+);
+
+alter table public.qe_backups enable row level security;
+
 alter table public.qe_categories enable row level security;
 alter table public.qe_transmissions enable row level security;
 alter table public.qe_archives enable row level security;
@@ -159,4 +172,8 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 do $$ begin
   create policy "Public read settings" on public.qe_site_settings for select using (true);
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create policy "Admin public read backups" on public.qe_backups for select using (true);
 exception when duplicate_object then null; end $$;

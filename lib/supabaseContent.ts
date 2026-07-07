@@ -375,3 +375,51 @@ export async function readContentFromSupabase() {
 
   return normalizeContent(content);
 }
+
+export async function createSupabaseBackup(content: any, reason = "manual-save") {
+  const client = createSupabaseAdminClient();
+  if (!client) return { ok: false, skipped: true, reason: "SUPABASE_SERVICE_ROLE_KEY não configurada." };
+
+  const normalized = normalizeContent(content);
+  const summary = {
+    transmissions: [normalized.featuredTransmission, ...(normalized.videos ?? [])].filter(Boolean).length,
+    archives: normalized.archives?.length ?? 0,
+    reports: normalized.relatos?.length ?? 0,
+    categories: normalized.categories?.length ?? 0,
+    timeline: normalized.timeline?.length ?? 0,
+  };
+
+  const { data, error } = await client
+    .from("qe_backups")
+    .insert({ reason, snapshot: normalized, summary, created_by: "content-studio" })
+    .select("id, created_at, reason, summary")
+    .single();
+
+  if (error) {
+    return { ok: false, skipped: false, error: error.message, details: error.details, hint: error.hint };
+  }
+
+  return { ok: true, id: data?.id, createdAt: data?.created_at, reason: data?.reason, summary: data?.summary };
+}
+
+export async function listSupabaseBackups(limit = 10) {
+  const client = createSupabaseAdminClient() ?? createSupabasePublicClient();
+  if (!client) return [];
+
+  const { data, error } = await client
+    .from("qe_backups")
+    .select("id, created_at, reason, summary, created_by")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) return [];
+
+  return (data ?? []).map((item: any) => ({
+    file: `supabase-backup-${String(item.created_at ?? "").replace(/[:.]/g, "-")}`,
+    createdAt: item.created_at,
+    size: JSON.stringify(item.summary ?? {}).length,
+    source: "supabase",
+    reason: item.reason,
+    summary: item.summary,
+  }));
+}
