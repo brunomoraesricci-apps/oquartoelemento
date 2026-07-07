@@ -35,7 +35,7 @@ const sidebarGroups: { title: string; items: Section[] }[] = [
 ];
 
 const CATEGORY_OPTIONS = ["OVNIs e Fenômenos", "Desaparecimentos", "Lendas e Mitos", "Civilizações Perdidas", "Relatos Proibidos", "Deep Web", "Relatos"];
-const STATUS_OPTIONS = ["Publicado", "Rascunho", "Oculto", "Em análise", "Recebido"];
+const STATUS_OPTIONS = ["Público", "Privado"];
 const CONTENT_TYPE_OPTIONS = ["transmissao", "relato", "short", "especial"];
 const CLASSIFICATION_OPTIONS = ["Desclassificado", "Confidencial", "Restrito", "Ultrassecreto", "Arquivo incompleto", "Em investigação"];
 const CHIP_FIELDS = ["tags", "relatedArchives", "relatedReportCodes"];
@@ -95,16 +95,16 @@ function label(field: string) {
 }
 
 function emptyTransmission(index: number) {
-  return { contentType: "transmissao", code: `QE-TX-${String(index + 1).padStart(3, "0")}`, title: "Nova transmissão", slug: "nova-transmissao", description: "Descrição da transmissão.", image: "", youtubeUrl: "", category: "OVNIs e Fenômenos", status: "Rascunho", tags: ["Transmissão"], location: "Brasil", year: "2026", relatedArchives: [], relatedReportCodes: [], seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", showInHero: false, heroOrder: index + 1 };
+  return { contentType: "transmissao", code: `QE-TX-${String(index + 1).padStart(3, "0")}`, title: "Nova transmissão", slug: "nova-transmissao", description: "Descrição da transmissão.", image: "", youtubeUrl: "", category: "OVNIs e Fenômenos", status: "Privado", tags: ["Transmissão"], location: "Brasil", year: "2026", relatedArchives: [], relatedReportCodes: [], seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", showInHero: false, heroOrder: index + 1 };
 }
 function emptyArchive(index: number) {
-  return { code: `QE-${String(index + 1).padStart(3, "0")}`, title: "Novo arquivo", slug: "novo-arquivo", summary: "Resumo do arquivo.", description: "Descrição curta do arquivo.", longDescription: "Texto principal do dossiê.", image: "", category: "OVNIs e Fenômenos", status: "Rascunho", location: "Brasil", year: "2026", classification: "Confidencial", accessLevel: "LV.04", relatedTransmissionSlug: "", relatedArchives: [], relatedReportCodes: [], seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", tags: ["Arquivo"] };
+  return { code: `QE-${String(index + 1).padStart(3, "0")}`, title: "Novo arquivo", slug: "novo-arquivo", summary: "Resumo do arquivo.", description: "Descrição curta do arquivo.", longDescription: "Texto principal do dossiê.", image: "", category: "OVNIs e Fenômenos", status: "Privado", location: "Brasil", year: "2026", classification: "Confidencial", accessLevel: "LV.04", relatedTransmissionSlug: "", relatedArchives: [], relatedReportCodes: [], seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", tags: ["Arquivo"] };
 }
 function emptyReport(index: number) {
-  return { code: `RP-${String(index + 1).padStart(3, "0")}`, title: "Novo relato", subtitle: "Relato recebido", description: "Breve descrição do relato.", image: "", youtubeUrl: "", category: "Relatos", status: "Recebido", location: "Brasil", year: "2026", relatedArchiveSlug: "", relatedTransmissionSlug: "", seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", tags: ["Relato"] };
+  return { code: `RP-${String(index + 1).padStart(3, "0")}`, title: "Novo relato", subtitle: "Relato recebido", description: "Breve descrição do relato.", image: "", youtubeUrl: "", category: "Relatos", status: "Privado", location: "Brasil", year: "2026", relatedArchiveSlug: "", relatedTransmissionSlug: "", seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", tags: ["Relato"] };
 }
 function emptyCategory(index: number) {
-  return { title: "Nova categoria", slug: `nova-categoria-${index + 1}`, symbol: "◇", image: "", description: "Descrição da categoria.", status: "Publicado", order: index + 1, seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", active: true };
+  return { title: "Nova categoria", slug: `nova-categoria-${index + 1}`, symbol: "◇", image: "", description: "Descrição da categoria.", status: "Público", order: index + 1, seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", active: true };
 }
 
 
@@ -273,7 +273,7 @@ function blockToContent(block: QePackageBlock, content: any) {
       sourceUrl: getField(data, "source_url") ?? getField(data, "youtube", "youtube_url", "youtubeUrl") ?? item.youtubeUrl,
       contentType: getField(data, "content_type", "contentType", "type") ?? item.contentType ?? "transmissao",
       category: getField(data, "category") ?? item.category,
-      status: getField(data, "status") ?? "Publicado",
+      status: getField(data, "visibility", "status") ?? "Público",
       location: getField(data, "location") ?? item.location,
       year: getField(data, "year") ?? item.year,
       tags: asArray(getField(data, "tags", "keywords")),
@@ -299,7 +299,7 @@ function blockToContent(block: QePackageBlock, content: any) {
       longDescription: getField(data, "long_description", "longDescription", "body") ?? item.longDescription,
       image: getField(data, "image", "thumbnail") ?? item.image,
       category: getField(data, "category") ?? item.category,
-      status: getField(data, "status") ?? "Publicado",
+      status: getField(data, "visibility", "status") ?? "Público",
       location: getField(data, "location") ?? item.location,
       year: getField(data, "year") ?? item.year,
       classification: getField(data, "classification") ?? item.classification,
@@ -331,7 +331,7 @@ function blockToContent(block: QePackageBlock, content: any) {
       sourceProvider: getField(data, "source_provider") ?? "youtube",
       sourceUrl: getField(data, "source_url") ?? getField(data, "youtube", "youtube_url", "youtubeUrl") ?? item.youtubeUrl,
       category: getField(data, "category") ?? "Relatos",
-      status: getField(data, "status") ?? "Publicado",
+      status: getField(data, "visibility", "status") ?? "Público",
       location: getField(data, "location") ?? item.location,
       year: getField(data, "year") ?? item.year,
       relatedArchives: asArray(getField(data, "related_archive", "related_archive_slug", "related_archives")),
@@ -352,7 +352,7 @@ function blockToContent(block: QePackageBlock, content: any) {
       symbol: getField(data, "symbol") ?? item.symbol,
       image: getField(data, "image") ?? item.image,
       description: getField(data, "description") ?? item.description,
-      status: getField(data, "status") ?? "Publicado",
+      status: getField(data, "visibility", "status") ?? "Público",
       order: Number(getField(data, "order") ?? item.order),
       seoTitle: getField(data, "seo_title") ?? "",
       seoDescription: getField(data, "seo_description") ?? "",
@@ -444,7 +444,7 @@ TITLE: Top 10 Mistérios Brasileiros
 SLUG: top-10-misterios-brasileiros
 CATEGORY: OVNIs e Fenômenos
 YEAR: 2026
-STATUS: Publicado
+STATUS: Público
 YOUTUBE: https://youtube.com/watch?v=EXEMPLO
 IMAGE: /images/top10-brasil.jpg
 HERO: true
@@ -551,23 +551,23 @@ function allEditorialItems(content: any) {
   ];
 }
 
-function statusType(status?: string) {
-  const normalized = String(status ?? "").toLowerCase();
-  if (["publicado", "published", "ativo", "active"].includes(normalized)) return "published";
-  if (["rascunho", "draft"].includes(normalized)) return "draft";
-  if (["em análise", "em analise", "recebido", "review", "received"].includes(normalized)) return "review";
-  return "other";
-}
 
 function formatDateTime(value?: string) {
-  if (!value) return "Sem registro";
-  try { return new Date(value).toLocaleString("pt-BR"); } catch { return value; }
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString("pt-BR");
+}
+
+function statusType(status?: string) {
+  const normalized = String(status ?? "").toLowerCase();
+  if (["público", "publico", "public", "published", "publicado"].includes(normalized)) return "published";
+  return "private";
 }
 
 function AdminDashboard({ content, stats, backups, onNavigate }: { content: any; stats: any; backups: BackupRecord[]; onNavigate: (section: Section) => void }) {
   const items = allEditorialItems(content);
-  const draftItems = items.filter((item) => statusType(item.status) === "draft");
-  const reviewItems = items.filter((item) => statusType(item.status) === "review");
+  const privateItems = items.filter((item) => statusType(item.status) === "private");
   const publishedItems = items.filter((item) => statusType(item.status) === "published");
   const seoPending = items.filter((item) => !item.seoTitle || !item.seoDescription);
   const imagePending = items.filter((item) => !item.image && item.kind !== "Relato");
@@ -576,7 +576,7 @@ function AdminDashboard({ content, stats, backups, onNavigate }: { content: any;
   const heroTitle = content.hero?.carouselItems?.[0]?.title ?? content.featuredTransmission?.title ?? content.hero?.title ?? "Hero não definido";
   const latestTransmission = [...(content.videos ?? [])].reverse().find((item: any) => statusType(item.status) === "published") ?? content.videos?.[0];
   const lastBackup = backups?.[0];
-  const healthScore = Math.max(0, 100 - seoPending.length * 8 - imagePending.length * 6 - draftItems.length * 4 - reviewItems.length * 3);
+  const healthScore = Math.max(0, 100 - seoPending.length * 8 - imagePending.length * 6 - privateItems.length * 3);
   const criticalIssues = [
     ...seoPending.slice(0, 3).map((item: any) => ({ label: `${item.kind}: ${item.title}`, detail: "SEO pendente", section: item.section })),
     ...imagePending.slice(0, 2).map((item: any) => ({ label: `${item.kind}: ${item.title}`, detail: "Imagem ausente", section: item.section })),
@@ -626,9 +626,8 @@ function AdminDashboard({ content, stats, backups, onNavigate }: { content: any;
         <span>Fila editorial</span>
         <div className="opsRows">
           <button type="button" onClick={() => onNavigate("transmissions")}><b>{publishedItems.length}</b><small>Publicados</small></button>
-          <button type="button" onClick={() => onNavigate("transmissions")}><b>{draftItems.length}</b><small>Rascunhos</small></button>
-          <button type="button" onClick={() => onNavigate("transmissions")}><b>{reviewItems.length}</b><small>Em revisão</small></button>
-          <button type="button" onClick={() => onNavigate("pipeline")}><b>QE</b><small>Importar pacote</small></button>
+          <button type="button" onClick={() => onNavigate("transmissions")}><b>{privateItems.length}</b><small>Privados</small></button>
+          <button type="button" onClick={() => onNavigate("youtube")}><b>QE</b><small>Nova publicação</small></button>
         </div>
       </section>
       <section className="terminalPanel editorialOpsPanel">
@@ -655,7 +654,7 @@ function YouTubeIntelligencePanel({ content, onApply }: { content: any; onApply:
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(CATEGORY_OPTIONS[0]);
   const [year, setYear] = useState("2026");
-  const [status, setStatus] = useState("Rascunho");
+  const [status, setStatus] = useState("Privado");
   const [description, setDescription] = useState("Abrir transmissão no arquivo.");
   const [createArchive, setCreateArchive] = useState(true);
   const [contentType, setContentType] = useState("transmissao");
@@ -709,7 +708,7 @@ SEO_TITLE: ${safeTitle} | O Quarto Elemento
 SEO_DESCRIPTION: ${description.trim() || `Arquivo investigativo sobre ${safeTitle}.`}
 RELATED_ARCHIVES:${archiveSlug ? `\n- ${archiveSlug}` : ""}
 AI_NOTES:
-Rascunho criado pela Auto Dossier Generation v6.2. Fonte detectada automaticamente a partir da URL. Revisar título, descrição, tags, SEO e relacionamentos antes da publicação.
+Publicação criada pela Visibility Publishing v6.3. Fonte detectada automaticamente a partir da URL. Revisar título, descrição, tags, SEO e relacionamentos antes da publicação.
 END_TRANSMISSION${createArchive ? `
 
 ARCHIVE
@@ -719,7 +718,7 @@ SLUG: ${archiveSlug}
 CONTENT_TYPE: ${contentType}
 CATEGORY: ${effectiveCategory}
 YEAR: ${year}
-STATUS: Rascunho
+STATUS: Privado
 CLASSIFICATION: Em investigação
 ACCESS_LEVEL: LV.03
 LOCATION: Brasil
@@ -742,7 +741,7 @@ Arquivo/dossiê inicial gerado automaticamente pela Auto Dossier Generation v6.2
 END_ARCHIVE` : ""}`;
 
     setPackageText(pkg);
-    setLocalStatus("✅ Rascunho inteligente gerado. Revise o pacote antes de aplicar.");
+    setLocalStatus("✅ Publicação gerada. Revise o pacote antes de aplicar.");
   }
 
   function applyGenerated() {
@@ -753,7 +752,7 @@ END_ARCHIVE` : ""}`;
     }
     const result = applyQePackage(content, parsed);
     onApply(result.content, `YouTube Intelligence: ${parsed.blocks.length} bloco(s) aplicado(s) localmente. Revise e clique em Salvar alterações para publicar no Supabase.`);
-    setLocalStatus("✅ Rascunho aplicado localmente. Falta salvar no Supabase.");
+    setLocalStatus("✅ Publicação aplicada localmente. Falta salvar no Supabase.");
   }
 
   return <div className="pipelineGrid youtubeIntelligenceGrid">
@@ -766,7 +765,7 @@ END_ARCHIVE` : ""}`;
           <TextField label="Título editorial" value={title} onChange={setTitle} />
           <div className="cmsField"><span>Tipo de conteúdo</span><select value={contentType} onChange={(e) => { setContentType(e.target.value); if (e.target.value === "relato") { setCategory("Relatos"); } }}><option value="transmissao">Transmissão</option><option value="relato">Relato</option><option value="short">Short</option><option value="especial">Especial</option></select></div>
           <div className="cmsField"><span>Categoria</span><select value={category} onChange={(e) => setCategory(e.target.value)}>{CATEGORY_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
-          <div className="cmsField"><span>Status inicial</span><select value={status} onChange={(e) => setStatus(e.target.value)}>{["Rascunho", "Em análise", "Publicado", "Oculto"].map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
+          <div className="cmsField"><span>Visibilidade inicial</span><select value={status} onChange={(e) => setStatus(e.target.value)}>{["Privado", "Público"].map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
           <TextField label="Ano" value={year} onChange={setYear} />
           <TextField label="Descrição curta" value={description} textarea onChange={setDescription} />
           <label className="cmsField resetCheckbox"><span>Arquivo automático</span><label><input type="checkbox" checked={createArchive} onChange={(e) => setCreateArchive(e.target.checked)} /> Criar arquivo/dossiê automaticamente a partir desta publicação</label></label>

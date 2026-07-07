@@ -1,4 +1,4 @@
-import { getContentAsync } from "@/lib/content";
+import { getPublicContentAsync } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
@@ -23,7 +23,7 @@ export const metadata = buildMetadata({
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const content = await getContentAsync();
+  const content = await getPublicContentAsync();
   const sections = {
     featuredTransmission: content.sections?.featuredTransmission !== false,
     categories: content.sections?.categories !== false,

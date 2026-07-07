@@ -1,4 +1,4 @@
-import { getContentAsync } from "@/lib/content";
+import { getPublicContentAsync } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
@@ -29,7 +29,7 @@ function getArchiveSlug(item: any) {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const content = await getContentAsync();
+  const content = await getPublicContentAsync();
   const archive = (content.archives ?? []).find((item: any) =>
     getArchiveSlug(item) === slug ||
     item.code === slug ||
@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ArquivoDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const content = await getContentAsync();
+  const content = await getPublicContentAsync();
 
   const archive = (content.archives ?? []).find((item: any) =>
     getArchiveSlug(item) === slug ||

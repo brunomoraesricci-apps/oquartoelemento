@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getContentAsync } from "@/lib/content";
+import { getPublicContentAsync } from "@/lib/content";
 import { SITE_URL } from "@/lib/seo";
 
 function slugify(value: string) {
@@ -14,7 +14,7 @@ function slugify(value: string) {
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const content = await getContentAsync();
+  const content = await getPublicContentAsync();
   const now = new Date();
 
   const staticRoutes = [

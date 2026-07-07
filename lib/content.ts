@@ -46,3 +46,27 @@ export async function getContentAsync() {
     };
   }
 }
+
+export function isPublicStatus(status?: string) {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  return ["público", "publico", "public", "published", "publicado", "ativo", "active"].includes(normalized);
+}
+
+export function toPublicContent(content: any) {
+  const clone = structuredClone(content ?? {});
+  const publicVideos = (clone.videos ?? []).filter((item: any) => isPublicStatus(item.status));
+  const featured = isPublicStatus(clone.featuredTransmission?.status) ? clone.featuredTransmission : null;
+  clone.categories = (clone.categories ?? []).filter((item: any) => item.active !== false && isPublicStatus(item.status));
+  clone.archives = (clone.archives ?? []).filter((item: any) => isPublicStatus(item.status));
+  clone.featuredTransmission = featured ?? publicVideos.find((item: any) => item.showInHero) ?? publicVideos[0] ?? null;
+  clone.videos = publicVideos.filter((item: any) => item.slug !== clone.featuredTransmission?.slug);
+  clone.relatos = [clone.featuredTransmission, ...(clone.videos ?? [])]
+    .filter(Boolean)
+    .filter((video: any) => isPublicStatus(video.status))
+    .filter((video: any) => video.contentType === "relato" || String(video.category ?? "").toLowerCase().includes("relato"));
+  return clone;
+}
+
+export async function getPublicContentAsync() {
+  return toPublicContent(await getContentAsync());
+}

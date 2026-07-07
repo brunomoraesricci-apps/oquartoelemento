@@ -1,4 +1,4 @@
-import { getContentAsync } from "@/lib/content";
+import { getPublicContentAsync } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
@@ -22,7 +22,7 @@ function localSlugify(value: string) {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const content = await getContentAsync();
+  const content = await getPublicContentAsync();
   const category = (content.categories ?? []).find((item: any) => (item.slug ?? localSlugify(item.title)) === slug);
 
   if (!category) {
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const content = await getContentAsync();
+  const content = await getPublicContentAsync();
   const category = (content.categories ?? []).find((item: any) => (item.slug ?? localSlugify(item.title)) === slug);
 
   if (!category) notFound();

@@ -1,4 +1,4 @@
-import { getContentAsync } from "@/lib/content";
+import { getPublicContentAsync } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
@@ -17,7 +17,7 @@ export const metadata = buildMetadata({
 export const dynamic = "force-dynamic";
 
 export default async function RelatosPage() {
-  const content = await getContentAsync();
+  const content = await getPublicContentAsync();
   const reports = (content.videos ?? []).filter((video: any) => video.contentType === "relato" || String(video.category ?? "").toLowerCase().includes("relato"));
 
   return (

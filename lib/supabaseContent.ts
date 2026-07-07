@@ -38,6 +38,16 @@ function arr(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.map(String).map((item) => item.trim()).filter(Boolean);
 }
+function normalizeVisibilityStatus(status: any): "Público" | "Privado" {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  if (["público", "publico", "public", "published", "publicado", "ativo", "active"].includes(normalized)) return "Público";
+  return "Privado";
+}
+
+function isPublicItem(item: any) {
+  return normalizeVisibilityStatus(item?.status) === "Público";
+}
+
 
 function tableRowBase(item: any) {
   return {
@@ -45,7 +55,7 @@ function tableRowBase(item: any) {
     slug: item.slug ?? slugify(item.title ?? "item"),
     description: item.description ?? item.summary ?? "",
     image: item.image ?? item.thumbnail ?? "",
-    status: item.status ?? "Publicado",
+    status: normalizeVisibilityStatus(item.status),
     seo_title: item.seoTitle ?? item.title ?? "",
     seo_description: item.seoDescription ?? item.summary ?? item.description ?? "",
     og_image: item.ogImage ?? item.image ?? "",
@@ -277,7 +287,7 @@ function camelBase(row: any) {
     slug: row.slug ?? raw.slug ?? slugify(row.title ?? "item"),
     description: row.description ?? raw.description ?? "",
     image: row.image ?? raw.image ?? "",
-    status: row.status ?? raw.status ?? "Publicado",
+    status: normalizeVisibilityStatus(row.status ?? raw.status),
     seoTitle: row.seo_title ?? raw.seoTitle ?? row.title ?? "",
     seoDescription: row.seo_description ?? raw.seoDescription ?? row.description ?? "",
     ogImage: row.og_image ?? raw.ogImage ?? row.image ?? "",
@@ -406,7 +416,8 @@ export async function readContentFromSupabase() {
     .filter((item: any) => item.showInHero)
     .sort((a: any, b: any) => Number(a.heroOrder ?? 99) - Number(b.heroOrder ?? 99))
     .slice(0, 5);
-  const heroCandidate = heroCandidates[0] ?? transmissions[0] ?? null;
+  const publicTransmissions = transmissions.filter(isPublicItem);
+  const heroCandidate = heroCandidates.find(isPublicItem) ?? publicTransmissions[0] ?? null;
   const videos = transmissions.filter((item: any) => item.slug !== heroCandidate?.slug);
   const archives = (archivesResult.data ?? []).map((row: any) => archiveFromRow(row, categories));
   const relatos = transmissions.filter((item: any) => item.contentType === "relato" || String(item.category ?? "").toLowerCase().includes("relato"));
@@ -415,7 +426,7 @@ export async function readContentFromSupabase() {
   const featuredArchive = settingValue(settings, "featuredArchive", null) ?? archives[0] ?? {};
 
   const content = {
-    schemaVersion: "5.4.0",
+    schemaVersion: "6.3.0",
     site: settingValue(settings, "site", {}),
     hero: settingValue(settings, "hero", {}),
     sections: settingValue(settings, "sections", {}),

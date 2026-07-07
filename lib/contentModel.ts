@@ -1,4 +1,4 @@
-export const CONTENT_SCHEMA_VERSION = "6.1.0";
+export const CONTENT_SCHEMA_VERSION = "6.3.0";
 
 export const CATEGORY_OPTIONS = [
   "OVNIs e Fenômenos",
@@ -10,7 +10,7 @@ export const CATEGORY_OPTIONS = [
   "Relatos",
 ];
 
-export const STATUS_OPTIONS = ["Publicado", "Rascunho", "Oculto", "Em análise", "Recebido"];
+export const STATUS_OPTIONS = ["Público", "Privado"];
 export const CONTENT_TYPE_OPTIONS = ["transmissao", "relato", "short", "especial"];
 export const CLASSIFICATION_OPTIONS = ["Desclassificado", "Confidencial", "Restrito", "Ultrassecreto", "Arquivo incompleto", "Em investigação"];
 
@@ -31,6 +31,12 @@ function compactArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.map(String).map((item) => item.trim()).filter(Boolean);
 }
+function normalizeVisibilityStatus(status: any): "Público" | "Privado" {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  if (["público", "publico", "public", "published", "publicado", "ativo", "active"].includes(normalized)) return "Público";
+  return "Privado";
+}
+
 
 function withSeoDefaults<T extends Record<string, any>>(item: T): T & SeoFields & AutomationFields {
   return {
@@ -58,7 +64,7 @@ export function normalizeContent(content: any) {
 
   next.categories = (next.categories ?? []).map((category: any, index: number) => ({
     ...withSeoDefaults(category),
-    status: category.status ?? (category.active === false ? "Oculto" : "Publicado"),
+    status: normalizeVisibilityStatus(category.status ?? (category.active === false ? "Privado" : "Público")),
     order: category.order ?? index + 1,
     active: category.active !== false,
   }));
@@ -71,7 +77,7 @@ export function normalizeContent(content: any) {
     image: report.image ?? "",
     youtubeUrl: report.youtubeUrl ?? "",
     category: report.category ?? "Relatos",
-    status: report.status ?? "Publicado",
+    status: normalizeVisibilityStatus(report.status),
     location: report.location ?? "Brasil",
     year: report.year ?? "2026",
     tags: report.tags ?? ["Relato"],
@@ -88,7 +94,7 @@ export function normalizeContent(content: any) {
     ...withSeoDefaults(video),
     relatedArchives: compactArray(video.relatedArchives),
     relatedReportCodes: compactArray(video.relatedReportCodes),
-    status: video.status ?? "Publicado",
+    status: normalizeVisibilityStatus(video.status),
     contentType: video.contentType ?? (String(video.category ?? "").toLowerCase().includes("relato") ? "relato" : "transmissao"),
   }));
 
@@ -105,7 +111,7 @@ export function normalizeContent(content: any) {
       ...withSeoDefaults(next.featuredTransmission),
       relatedArchives: compactArray(next.featuredTransmission.relatedArchives),
       relatedReportCodes: compactArray(next.featuredTransmission.relatedReportCodes),
-      status: next.featuredTransmission.status ?? "Publicado",
+      status: normalizeVisibilityStatus(next.featuredTransmission.status),
     };
   }
 
@@ -115,7 +121,7 @@ export function normalizeContent(content: any) {
     relatedReportCodes: compactArray(archive.relatedReportCodes),
     relatedTransmissionSlug: archive.relatedTransmissionSlug ?? "",
     classification: archive.classification ?? "Confidencial",
-    status: archive.status ?? "Publicado",
+    status: normalizeVisibilityStatus(archive.status),
   }));
 
   // Relatos agora são vídeos com contentType="relato". Mantemos next.relatos como visão derivada
@@ -127,7 +133,7 @@ export function normalizeContent(content: any) {
       subtitle: video.subtitle ?? "Relato audiovisual",
       relatedArchiveSlug: video.relatedArchives?.[0] ?? video.relatedArchiveSlug ?? "",
       relatedTransmissionSlug: video.slug ?? "",
-      status: video.status ?? "Publicado",
+      status: normalizeVisibilityStatus(video.status),
     }));
 
   return next;
