@@ -605,6 +605,9 @@ function DatabasePanel() {
   const [status, setStatus] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [importResult, setImportResult] = useState<any | null>(null);
+  const [resetConfirmation, setResetConfirmation] = useState("");
+  const [fullReset, setFullReset] = useState(false);
+  const [resetResult, setResetResult] = useState<any | null>(null);
 
   async function checkConnection() {
     setLoading(true);
@@ -622,12 +625,37 @@ function DatabasePanel() {
   async function importJson() {
     setLoading(true);
     setImportResult(null);
+    setResetResult(null);
     try {
       const res = await fetch("/api/admin/supabase/import", { method: "POST" });
       setImportResult(await res.json());
       await checkConnection();
     } catch {
       setImportResult({ ok: false, message: "Erro ao importar JSON para Supabase." });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
+  async function resetArchive() {
+    setLoading(true);
+    setResetResult(null);
+    setImportResult(null);
+    try {
+      const res = await fetch("/api/admin/supabase/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmation: resetConfirmation, fullReset }),
+      });
+      const data = await res.json().catch(() => ({ ok: false, message: "Resposta inválida do servidor." }));
+      setResetResult(data);
+      if (data.ok) {
+        setResetConfirmation("");
+        await checkConnection();
+      }
+    } catch {
+      setResetResult({ ok: false, message: "Erro ao executar reset editorial." });
     } finally {
       setLoading(false);
     }
@@ -655,12 +683,26 @@ function DatabasePanel() {
     </section>
 
     <section className="terminalPanel editorialIssues">
+      <div className="cmsEditorHead"><div><span>Reset editorial seguro</span><h2>Limpar acervo oficial</h2></div></div>
+      <p className="cmsHint">Use apenas quando quiser reiniciar a base e republicar o acervo pelo fluxo novo. Antes de limpar, o sistema cria um backup em <b>qe_backups</b>.</p>
+      <div className="issueList">
+        <button type="button"><b>Modo padrão</b><span>Limpa transmissões, arquivos, relatos e timeline. Mantém categorias e configurações.</span></button>
+        <button type="button"><b>Modo completo</b><span>Também limpa categorias. Use só para reconstrução total do acervo.</span></button>
+      </div>
+      <label className="cmsField resetCheckbox"><span>Reset completo</span><label><input type="checkbox" checked={fullReset} onChange={(e) => setFullReset(e.target.checked)} /> Também limpar categorias</label></label>
+      <TextField label={fullReset ? "Digite LIMPAR TUDO QUARTO ELEMENTO" : "Digite LIMPAR ACERVO QUARTO ELEMENTO"} value={resetConfirmation} onChange={setResetConfirmation} />
+      <div className="packageActions"><button className="btn danger" type="button" onClick={resetArchive} disabled={loading || resetConfirmation !== (fullReset ? "LIMPAR TUDO QUARTO ELEMENTO" : "LIMPAR ACERVO QUARTO ELEMENTO")}>{loading ? "Processando..." : "Executar reset seguro"}</button></div>
+      {resetResult && <div className={resetResult.ok ? "packageApplied" : "packageErrors"}><b>{resetResult.ok ? "Reset concluído" : "Reset bloqueado"}</b><p>{resetResult.ok ? `Modo: ${resetResult.mode}. Backup: ${resetResult.backup?.ok ? resetResult.backup.id : "não criado"}.` : resetResult.message}</p></div>}
+      {resetResult?.steps && <div className="packageBlockList">{resetResult.steps.map((item: any) => <div key={`${item.table}-${item.action ?? "delete"}`}><small>{item.table}</small><b>{item.count} registro(s)</b></div>)}</div>}
+    </section>
+
+    <section className="terminalPanel editorialIssues">
       <div className="cmsEditorHead"><div><span>Plano de migração</span><h2>Supabase Source of Truth</h2></div></div>
       <div className="issueList">
         <button type="button"><b>1. Criar tabelas</b><span>Schema aplicado no Supabase.</span></button>
         <button type="button"><b>2. Configurar variáveis</b><span>Variáveis configuradas em local e produção.</span></button>
-        <button type="button"><b>3. Importar acervo</b><span>Usar apenas quando precisar repopular o banco a partir do JSON legado.</span></button>
-        <button type="button"><b>4. Próxima versão</b><span>Leitura e escrita já priorizam o Supabase; JSON é fallback.</span></button>
+        <button type="button"><b>3. Reset seguro</b><span>Limpar base oficial somente após backup em banco.</span></button>
+        <button type="button"><b>4. Próxima versão</b><span>Popular acervo via URL do YouTube e QE Package.</span></button>
       </div>
     </section>
 

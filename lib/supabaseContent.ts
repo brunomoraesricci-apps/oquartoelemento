@@ -424,3 +424,93 @@ export async function listSupabaseBackups(limit = 10) {
     summary: item.summary,
   }));
 }
+
+
+async function deleteAllRows(client: any, table: string, idColumn = "id") {
+  const startedAt = Date.now();
+  const { data, error } = await client.from(table).delete().not(idColumn, "is", null).select(idColumn);
+  const durationMs = Date.now() - startedAt;
+  if (error) {
+    const debugError: any = new Error(`${table}: ${error.message}`);
+    debugError.table = table;
+    debugError.supabase = {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    };
+    debugError.durationMs = durationMs;
+    throw debugError;
+  }
+  return { table, count: Array.isArray(data) ? data.length : 0, durationMs };
+}
+
+async function upsertSetting(client: any, key: string, value: any) {
+  const { error } = await client
+    .from("qe_site_settings")
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+
+  if (error) {
+    const debugError: any = new Error(`qe_site_settings/${key}: ${error.message}`);
+    debugError.table = "qe_site_settings";
+    debugError.supabase = {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    };
+    throw debugError;
+  }
+}
+
+export async function resetSupabaseEditorialArchive(options: { fullReset?: boolean; keepSettings?: boolean; reason?: string } = {}) {
+  const client = createSupabaseAdminClient();
+  if (!client) throw new Error("SUPABASE_SERVICE_ROLE_KEY não configurada. Reset exige chave server-side.");
+
+  const fullReset = Boolean(options.fullReset);
+  const keepSettings = options.keepSettings !== false;
+  const currentContent = await readContentFromSupabase();
+  const backup = currentContent
+    ? await createSupabaseBackup(currentContent, options.reason ?? (fullReset ? "before-full-editorial-reset" : "before-editorial-reset"))
+    : { ok: false, skipped: true, reason: "Conteúdo atual não pôde ser lido antes do reset." };
+
+  const steps: any[] = [];
+  console.log("══════════════════════════════════════");
+  console.log("QE Editorial Reset", { fullReset, keepSettings });
+  console.log("══════════════════════════════════════");
+
+  for (const table of ["qe_reports", "qe_timeline_events", "qe_archives", "qe_transmissions"]) {
+    const result = await deleteAllRows(client, table);
+    steps.push(result);
+    console.log(`[QE RESET] OK ${table}`, result);
+  }
+
+  if (fullReset) {
+    const result = await deleteAllRows(client, "qe_categories");
+    steps.push(result);
+    console.log("[QE RESET] OK qe_categories", result);
+  }
+
+  if (keepSettings) {
+    await upsertSetting(client, "hero", {
+      eyebrow: "ARQUIVO EM RECONSTRUÇÃO",
+      title: "O Quarto Elemento",
+      subtitle: "Acervo editorial reiniciado",
+      description: "A base oficial foi limpa com segurança. Novas transmissões serão publicadas pelo Content Studio.",
+      image: "",
+      carouselSelectedSlugs: [],
+      carouselItems: [],
+    });
+    await upsertSetting(client, "featuredArchive", {});
+    await upsertSetting(client, "featuredTransmission", {});
+    steps.push({ table: "qe_site_settings", count: 3, durationMs: 0, action: "reset hero/featured settings" });
+  }
+
+  return {
+    ok: true,
+    resetAt: new Date().toISOString(),
+    mode: fullReset ? "full-editorial-reset" : "editorial-content-reset",
+    backup,
+    steps,
+  };
+}
