@@ -4010,3 +4010,47 @@ main{position:relative;z-index:3}
   opacity:.6;
   cursor:not-allowed;
 }
+
+/* v6.0 — YouTube Intelligence Foundation */
+.youtubeIntelligencePreview .cmsPreview {
+  margin-top: 16px;
+  position: static;
+}
+.sourceThumbList {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+  border-top: 1px solid rgba(197, 161, 86, 0.14);
+  border-bottom: 1px solid rgba(197, 161, 86, 0.14);
+  padding: 12px 0;
+}
+.sourceThumbList b {
+  width: 100%;
+  color: rgba(197, 161, 86, 0.86);
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  font-size: 10px;
+}
+.sourceThumbList a {
+  border: 1px solid rgba(197, 161, 86, 0.22);
+  color: rgba(244, 226, 187, 0.88);
+  padding: 6px 9px;
+  text-decoration: none;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.embedPreview {
+  margin: 14px 0;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(197, 161, 86, 0.18);
+  background: rgba(0,0,0,.42);
+  overflow: hidden;
+}
+.embedPreview iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}

@@ -88,7 +88,7 @@ function label(field: string) {
     text: "Texto", eyebrow: "Texto superior", primaryActionLabel: "Botão principal", secondaryActionLabel: "Botão secundário",
     featuredArchiveSlug: "Arquivo destaque", featuredTransmissionSlug: "Transmissão destaque", featuredTransmissionYoutubeUrl: "YouTube destaque",
     seoTitle: "SEO: título", seoDescription: "SEO: descrição", ogImage: "OpenGraph: imagem", aiNotes: "IA: notas para automação", aiSourceUrl: "IA: URL fonte", aiGenerated: "Gerado por IA", aiReviewed: "Revisado",
-    relatedArchives: "Arquivos relacionados", relatedReportCodes: "Relatos relacionados", relatedArchiveSlug: "Arquivo relacionado", active: "Categoria ativa", order: "Ordem", symbol: "Símbolo"
+    relatedArchives: "Arquivos relacionados", relatedReportCodes: "Relatos relacionados", relatedArchiveSlug: "Arquivo relacionado", active: "Categoria ativa", order: "Ordem", symbol: "Símbolo", videoId: "YouTube Video ID", embedUrl: "YouTube Embed URL", sourceProvider: "Fonte", sourceUrl: "URL original"
   };
   return map[field] ?? field;
 }
@@ -212,6 +212,36 @@ function youtubeThumb(videoId: string) {
   return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : "";
 }
 
+function youtubeEmbed(videoId: string) {
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+}
+
+function youtubeWatchUrl(videoId: string) {
+  return videoId ? `https://www.youtube.com/watch?v=${videoId}` : "";
+}
+
+function youtubeThumbnailSet(videoId: string) {
+  if (!videoId) return [];
+  return [
+    { label: "Maxres", url: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` },
+    { label: "HQ", url: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` },
+    { label: "MQ", url: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` },
+  ];
+}
+
+function nextCode(prefix: string, existing: any[] = []) {
+  const numbers = existing
+    .map((item) => String(item?.code ?? ""))
+    .map((code) => Number(code.match(/(\d+)$/)?.[1] ?? 0))
+    .filter((number) => Number.isFinite(number));
+  const next = Math.max(0, ...numbers) + 1;
+  return `${prefix}-${String(next).padStart(3, "0")}`;
+}
+
+function draftTitleFromVideoId(videoId: string) {
+  return videoId ? `Transmissão ${videoId}` : "Nova transmissão";
+}
+
 function upsertBySlug(list: any[], item: any) {
   const slug = item.slug || slugify(item.title || "novo-item");
   const normalized = { ...item, slug };
@@ -236,6 +266,10 @@ function blockToContent(block: QePackageBlock, content: any) {
       description: getField(data, "description", "summary") ?? item.description,
       image: getField(data, "image", "thumbnail") ?? item.image,
       youtubeUrl: getField(data, "youtube", "youtube_url", "youtubeUrl") ?? item.youtubeUrl,
+      videoId: getField(data, "video_id", "youtube_video_id") ?? extractYouTubeId(String(getField(data, "youtube", "youtube_url", "youtubeUrl") ?? "")),
+      embedUrl: getField(data, "embed_url") ?? youtubeEmbed(String(getField(data, "video_id", "youtube_video_id") ?? extractYouTubeId(String(getField(data, "youtube", "youtube_url", "youtubeUrl") ?? "")))),
+      sourceProvider: getField(data, "source_provider") ?? "youtube",
+      sourceUrl: getField(data, "source_url") ?? getField(data, "youtube", "youtube_url", "youtubeUrl") ?? item.youtubeUrl,
       category: getField(data, "category") ?? item.category,
       status: getField(data, "status") ?? "Publicado",
       location: getField(data, "location") ?? item.location,
@@ -289,6 +323,10 @@ function blockToContent(block: QePackageBlock, content: any) {
       description: getField(data, "description") ?? item.description,
       image: getField(data, "image", "thumbnail") ?? item.image,
       youtubeUrl: getField(data, "youtube", "youtube_url", "youtubeUrl") ?? item.youtubeUrl,
+      videoId: getField(data, "video_id", "youtube_video_id") ?? extractYouTubeId(String(getField(data, "youtube", "youtube_url", "youtubeUrl") ?? "")),
+      embedUrl: getField(data, "embed_url") ?? youtubeEmbed(String(getField(data, "video_id", "youtube_video_id") ?? extractYouTubeId(String(getField(data, "youtube", "youtube_url", "youtubeUrl") ?? "")))),
+      sourceProvider: getField(data, "source_provider") ?? "youtube",
+      sourceUrl: getField(data, "source_url") ?? getField(data, "youtube", "youtube_url", "youtubeUrl") ?? item.youtubeUrl,
       category: getField(data, "category") ?? item.category,
       status: getField(data, "status") ?? item.status,
       location: getField(data, "location") ?? item.location,
@@ -608,7 +646,7 @@ function AdminDashboard({ content, stats, backups, onNavigate }: { content: any;
 }
 
 
-function YouTubeIntakePanel({ content, onApply }: { content: any; onApply: (nextContent: any, message: string) => void }) {
+function YouTubeIntelligencePanel({ content, onApply }: { content: any; onApply: (nextContent: any, message: string) => void }) {
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(CATEGORY_OPTIONS[0]);
@@ -621,28 +659,37 @@ function YouTubeIntakePanel({ content, onApply }: { content: any; onApply: (next
   const [localStatus, setLocalStatus] = useState("");
 
   const videoId = extractYouTubeId(youtubeUrl);
-  const safeTitle = title.trim() || (videoId ? `Nova transmissão ${videoId}` : "Nova transmissão");
-  const slug = slugify(safeTitle);
+  const canonicalUrl = youtubeWatchUrl(videoId) || youtubeUrl.trim();
+  const embedUrl = youtubeEmbed(videoId);
   const thumbnail = youtubeThumb(videoId);
+  const thumbs = youtubeThumbnailSet(videoId);
+  const safeTitle = title.trim() || draftTitleFromVideoId(videoId);
+  const slug = slugify(safeTitle);
+  const nextTransmissionCode = nextCode("QE-V", [content.featuredTransmission, ...(content.videos ?? [])].filter(Boolean));
+  const nextArchiveCode = nextCode("QE", content.archives ?? []);
+  const archiveSlug = createArchive ? `${slug}-dossie` : "";
+  const sourceId = videoId ? `youtube:${videoId}` : "";
 
   function buildPackage() {
     if (!videoId) {
       setLocalStatus("❌ URL do YouTube inválida ou sem video id.");
       return;
     }
-    const nextCode = `QE-V-${String((content.videos?.length ?? 0) + 1).padStart(3, "0")}`;
-    const archiveCode = `QE-${String((content.archives?.length ?? 0) + 1).padStart(3, "0")}`;
-    const archiveSlug = createArchive ? `${slug}-arquivo` : "";
-    const pkg = `QE_PACKAGE_VERSION: 1.0
+
+    const pkg = `QE_PACKAGE_VERSION: 1.1
 
 TRANSMISSION
-CODE: ${nextCode}
+CODE: ${nextTransmissionCode}
 TITLE: ${safeTitle}
 SLUG: ${slug}
 CATEGORY: ${category}
 YEAR: ${year}
 STATUS: ${status}
-YOUTUBE: ${youtubeUrl.trim()}
+SOURCE_PROVIDER: youtube
+SOURCE_URL: ${canonicalUrl}
+VIDEO_ID: ${videoId}
+EMBED_URL: ${embedUrl}
+YOUTUBE: ${canonicalUrl}
 IMAGE: ${thumbnail}
 HERO: ${showInHero ? "true" : "false"}
 DESCRIPTION:
@@ -650,21 +697,23 @@ ${description.trim() || "Abrir transmissão no arquivo."}
 TAGS:
 - ${category.toLowerCase()}
 - quarto elemento
+- youtube
 SEO_TITLE: ${safeTitle} | O Quarto Elemento
 SEO_DESCRIPTION: ${description.trim() || `Arquivo investigativo sobre ${safeTitle}.`}
 RELATED_ARCHIVES:${archiveSlug ? `\n- ${archiveSlug}` : ""}
 AI_NOTES:
-Pacote inicial gerado a partir da URL do YouTube. Revisar título, descrição, tags, SEO e relacionamentos antes da publicação.
+Rascunho criado pela YouTube Intelligence Foundation v6.0. Fonte detectada automaticamente a partir da URL. Revisar título, descrição, tags, SEO e relacionamentos antes da publicação.
 END_TRANSMISSION${createArchive ? `
 
 ARCHIVE
-CODE: ${archiveCode}
+CODE: ${nextArchiveCode}
 TITLE: ${safeTitle}
 SLUG: ${archiveSlug}
 CATEGORY: ${category}
 YEAR: ${year}
 STATUS: Rascunho
 CLASSIFICATION: Em investigação
+ACCESS_LEVEL: LV.03
 LOCATION: Brasil
 IMAGE: ${thumbnail}
 SUMMARY:
@@ -677,13 +726,15 @@ RELATED_TRANSMISSION_SLUG: ${slug}
 TAGS:
 - ${category.toLowerCase()}
 - dossiê
+- youtube-source
 SEO_TITLE: ${safeTitle} | Dossiê | O Quarto Elemento
 SEO_DESCRIPTION: Dossiê investigativo relacionado à transmissão ${safeTitle}.
 AI_NOTES:
-Arquivo inicial gerado pelo YouTube Intake. Revisar conteúdo antes de publicar.
+Arquivo inicial gerado pela YouTube Intelligence Foundation v6.0. Revisar conteúdo antes de publicar.
 END_ARCHIVE` : ""}`;
+
     setPackageText(pkg);
-    setLocalStatus("✅ Pacote inicial gerado. Revise antes de aplicar.");
+    setLocalStatus("✅ Rascunho inteligente gerado. Revise o pacote antes de aplicar.");
   }
 
   function applyGenerated() {
@@ -693,14 +744,14 @@ END_ARCHIVE` : ""}`;
       return;
     }
     const result = applyQePackage(content, parsed);
-    onApply(result.content, `Pacote gerado por URL aplicado localmente: ${parsed.blocks.length} bloco(s). Revise e clique em Salvar alterações para publicar no Supabase.`);
-    setLocalStatus("✅ Pacote aplicado localmente. Falta salvar no Supabase.");
+    onApply(result.content, `YouTube Intelligence: ${parsed.blocks.length} bloco(s) aplicado(s) localmente. Revise e clique em Salvar alterações para publicar no Supabase.`);
+    setLocalStatus("✅ Rascunho aplicado localmente. Falta salvar no Supabase.");
   }
 
-  return <div className="pipelineGrid">
+  return <div className="pipelineGrid youtubeIntelligenceGrid">
     <section className="terminalPanel packageImporter">
-      <div className="cmsEditorHead"><div><span>QE YouTube Intake</span><h2>Nova publicação por URL</h2></div></div>
-      <p className="cmsHint">Cole a URL do YouTube para gerar um QE Package inicial. Nesta fase, o sistema extrai o ID do vídeo e a thumbnail pública; título, SEO e dossiê devem ser revisados antes de salvar.</p>
+      <div className="cmsEditorHead"><div><span>QE YouTube Intelligence</span><h2>Nova publicação por URL</h2></div></div>
+      <p className="cmsHint">Cole a URL do YouTube para gerar um rascunho editorial estruturado. Esta fundação v6.0 extrai ID, thumbnail, embed, URL canônica, código QE, slug e pacote inicial sem usar API paga.</p>
       <div className="cmsEditorGrid single">
         <div>
           <TextField label="URL do YouTube" value={youtubeUrl} onChange={setYoutubeUrl} />
@@ -713,16 +764,18 @@ END_ARCHIVE` : ""}`;
           <label className="cmsField resetCheckbox"><span>Hero</span><label><input type="checkbox" checked={showInHero} onChange={(e) => setShowInHero(e.target.checked)} /> Sugerir transmissão no carrossel principal</label></label>
         </div>
       </div>
-      <div className="packageActions"><button className="btn btnRed" type="button" onClick={buildPackage}>Gerar pacote</button><button className="btn" type="button" onClick={applyGenerated} disabled={!packageText.trim()}>Aplicar localmente</button></div>
+      <div className="packageActions"><button className="btn btnRed" type="button" onClick={buildPackage}>Gerar rascunho inteligente</button><button className="btn" type="button" onClick={applyGenerated} disabled={!packageText.trim()}>Aplicar localmente</button></div>
       {localStatus && <div className={localStatus.startsWith("❌") ? "packageErrors" : "packageApplied"}><p>{localStatus}</p></div>}
-      <textarea className="packageEditor" value={packageText} placeholder="O QE Package gerado aparecerá aqui..." onChange={(e) => setPackageText(e.target.value)} />
+      <textarea className="packageEditor" value={packageText} placeholder="O QE Package v1.1 gerado aparecerá aqui..." onChange={(e) => setPackageText(e.target.value)} />
     </section>
-    <aside className="terminalPanel packagePreview">
-      <span>Preview do vídeo</span>
+    <aside className="terminalPanel packagePreview youtubeIntelligencePreview">
+      <span>Source Intelligence</span>
       <h3>{safeTitle}</h3>
-      <div className="packageCounts"><p>Video ID: <b>{videoId || "—"}</b></p><p>Slug: <b>{slug}</b></p><p>Thumbnail: <b>{thumbnail ? "detectada" : "pendente"}</b></p><p>Destino: <b>QE Package</b></p></div>
+      <div className="packageCounts"><p>Provider: <b>{videoId ? "YouTube" : "—"}</b></p><p>Video ID: <b>{videoId || "—"}</b></p><p>Source ID: <b>{sourceId || "—"}</b></p><p>Código sugerido: <b>{nextTransmissionCode}</b></p><p>Slug: <b>{slug}</b></p><p>Embed: <b>{embedUrl ? "gerado" : "pendente"}</b></p><p>Thumbnail: <b>{thumbnail ? "detectada" : "pendente"}</b></p></div>
       {thumbnail && <PreviewCard item={{ title: safeTitle, description, image: thumbnail, category, status }} type="YouTube" />}
-      <div className="packageErrors"><b>Atenção</b><p>Esta versão não consulta a API oficial do YouTube. Ela usa apenas a URL para montar o pacote inicial sem custo adicional.</p></div>
+      {thumbs.length > 0 && <div className="sourceThumbList"><b>Thumbnails públicas</b>{thumbs.map((thumb) => <a key={thumb.label} href={thumb.url} target="_blank" rel="noreferrer">{thumb.label}</a>)}</div>}
+      {embedUrl && <div className="embedPreview"><iframe src={embedUrl} title="YouTube preview" allowFullScreen /></div>}
+      <div className="packageErrors"><b>Limite da v6.0</b><p>Esta versão não consulta a API oficial do YouTube. Título real, descrição completa, duração e data de publicação entram na v6.1 com YouTube Data API.</p></div>
     </aside>
   </div>;
 }
@@ -937,7 +990,7 @@ export default function AdminPage() {
     {active === "transmissions" && <CollectionManager title="Transmissões" type="transmission" items={content.videos ?? []} content={content} uploadImage={uploadImage} groups={transmissionGroups} onAdd={() => addItem("videos", emptyTransmission(content.videos?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("videos", i, v)} onRemove={(i: number) => removeItem("videos", i)} />}
   {active === "archives" && <CollectionManager title="Arquivos" type="archive" items={content.archives ?? []} content={content} uploadImage={uploadImage} groups={archiveGroups} onAdd={() => addItem("archives", emptyArchive(content.archives?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("archives", i, v)} onRemove={(i: number) => removeItem("archives", i)} />}
   {active === "reports" && <CollectionManager title="Relatos" type="report" items={content.relatos ?? []} content={content} uploadImage={uploadImage} groups={reportGroups} onAdd={() => addItem("relatos", emptyReport(content.relatos?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("relatos", i, v)} onRemove={(i: number) => removeItem("relatos", i)} />}
-  {active === "youtube" && <YouTubeIntakePanel content={content} onApply={(nextContent, message) => { setContent(nextContent); setStatus(message); }} />}
+  {active === "youtube" && <YouTubeIntelligencePanel content={content} onApply={(nextContent, message) => { setContent(nextContent); setStatus(message); }} />}
   {active === "pipeline" && <ContentPipelinePanel content={content} onApply={(nextContent, message) => { setContent(nextContent); setStatus(message); }} />}
   {active === "categories" && <CollectionManager title="Categorias" type="category" items={content.categories ?? []} content={content} uploadImage={uploadImage} groups={categoryGroups} onAdd={() => addItem("categories", emptyCategory(content.categories?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("categories", i, v)} onRemove={(i: number) => removeItem("categories", i)} />}
   {active === "database" && <DatabasePanel />}

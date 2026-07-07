@@ -30,6 +30,10 @@ create table if not exists public.qe_transmissions (
   description text,
   image text,
   youtube_url text,
+  video_id text,
+  embed_url text,
+  source_provider text,
+  source_url text,
   category_slug text,
   status text default 'Publicado',
   published_at text,
@@ -94,6 +98,10 @@ create table if not exists public.qe_reports (
   description text,
   image text,
   youtube_url text,
+  video_id text,
+  embed_url text,
+  source_provider text,
+  source_url text,
   category_slug text,
   status text default 'Recebido',
   location text,
@@ -135,6 +143,24 @@ create table if not exists public.qe_site_settings (
 );
 
 
+-- v6.0: source intelligence for YouTube and future providers.
+create table if not exists public.qe_sources (
+  id uuid primary key default gen_random_uuid(),
+  provider text not null default 'youtube',
+  provider_id text not null,
+  original_url text,
+  embed_url text,
+  thumbnail_url text,
+  title text,
+  description text,
+  duration text,
+  published_at text,
+  raw jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique(provider, provider_id)
+);
+
 -- v5.3: database-native editorial backups.
 create table if not exists public.qe_backups (
   id uuid primary key default gen_random_uuid(),
@@ -153,6 +179,7 @@ alter table public.qe_archives enable row level security;
 alter table public.qe_reports enable row level security;
 alter table public.qe_timeline_events enable row level security;
 alter table public.qe_site_settings enable row level security;
+alter table public.qe_sources enable row level security;
 
 -- Public read policies. Admin writes use SUPABASE_SERVICE_ROLE_KEY server-side.
 do $$ begin
@@ -177,3 +204,11 @@ exception when duplicate_object then null; end $$;
 do $$ begin
   create policy "Admin public read backups" on public.qe_backups for select using (true);
 exception when duplicate_object then null; end $$;
+
+
+do $$ begin
+  create policy "Public read sources" on public.qe_sources for select using (true);
+exception when duplicate_object then null; end $$;
+
+create index if not exists qe_sources_provider_id_idx on public.qe_sources(provider, provider_id);
+create index if not exists qe_transmissions_video_id_idx on public.qe_transmissions(video_id);

@@ -1,44 +1,37 @@
-# O Quarto Elemento — v5.4 Supabase Source of Truth
+# O Quarto Elemento — v6.0 YouTube Intelligence Foundation
 
-# O Quarto Elemento — v5.3 Supabase First
+Site oficial e Content Studio do O Quarto Elemento.
 
-Plataforma editorial investigativa do canal O Quarto Elemento.
+## Destaques da v6.0
 
-## v5.3
+- Nova Publicação evoluída para **YouTube Intelligence**.
+- Geração determinística de rascunho a partir de URL do YouTube.
+- Extração de `videoId`, embed URL, thumbnail pública e URL canônica.
+- QE Package v1.1 com campos de origem (`SOURCE_PROVIDER`, `SOURCE_URL`, `VIDEO_ID`, `EMBED_URL`).
+- Nova tabela opcional `qe_sources` para registrar fontes de vídeo.
+- Supabase segue como fonte oficial; JSON fica como fallback/exportação.
 
-- Supabase como destino principal de escrita.
-- JSON mantido como fallback read-only.
-- Backups editoriais salvos no banco (`qe_backups`).
-- Remoção do aviso de filesystem da Vercel durante o save.
-- Guia: `docs/SUPABASE_FIRST.md`.
+## Antes de rodar em produção
+
+Execute no Supabase SQL Editor:
+
+```sql
+-- docs/SUPABASE_V6_0_SOURCES.sql
+```
 
 ## Desenvolvimento
 
 ```bash
 npm install
+npm run build
 npm run dev
 ```
 
-## Build
+## Deploy
 
 ```bash
-npm run build
+git status
+git add .
+git commit -m "v6.0 YouTube Intelligence Foundation"
+git push origin main
 ```
-
-
-## v5.4
-
-Supabase passa a ser a fonte oficial do acervo. JSON permanece apenas como fallback/exportação. Guia: `docs/SUPABASE_SOURCE_OF_TRUTH.md`.
-
-## v5.5 — Supabase Editorial Reset
-
-- Reset seguro do acervo oficial pelo Content Studio.
-- Backup automático em `qe_backups` antes da limpeza.
-- Modo padrão: limpa transmissões, arquivos, relatos e timeline.
-- Modo completo: também limpa categorias.
-- Preparação para repopular a base usando URL do YouTube + QE Package.
-
-
-## v5.6 YouTube Intake
-
-Adiciona a tela **Nova Publicação**, que gera um QE Package inicial a partir de uma URL do YouTube sem usar API paga.

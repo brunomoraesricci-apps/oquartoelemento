@@ -10,6 +10,30 @@ function slugify(value: string) {
     .replace(/(^-|-$)+/g, "");
 }
 
+function extractYouTubeId(url: string) {
+  const value = String(url ?? "").trim();
+  const patterns = [
+    /youtu\.be\/([A-Za-z0-9_-]{6,})/,
+    /youtube\.com\/watch\?v=([A-Za-z0-9_-]{6,})/,
+    /youtube\.com\/embed\/([A-Za-z0-9_-]{6,})/,
+    /youtube\.com\/shorts\/([A-Za-z0-9_-]{6,})/,
+  ];
+  for (const pattern of patterns) {
+    const match = value.match(pattern);
+    if (match?.[1]) return match[1].split(/[?&]/)[0];
+  }
+  try {
+    const parsed = new URL(value);
+    return parsed.searchParams.get("v") ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function youtubeEmbed(videoId: string) {
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+}
+
 function arr(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.map(String).map((item) => item.trim()).filter(Boolean);
@@ -39,10 +63,39 @@ export function mapContentToSupabaseRows(content: any) {
     active: category.active !== false,
   }));
 
-  const transmissions = [content.featuredTransmission, ...(content.videos ?? [])].filter(Boolean).map((video: any, index: number) => ({
+  const allTransmissions = [content.featuredTransmission, ...(content.videos ?? [])].filter(Boolean);
+
+  const sources = allTransmissions
+    .map((video: any) => {
+      const videoId = video.videoId ?? extractYouTubeId(video.youtubeUrl ?? video.sourceUrl ?? "");
+      if (!videoId) return null;
+      return {
+        provider: video.sourceProvider ?? "youtube",
+        provider_id: videoId,
+        original_url: video.sourceUrl ?? video.youtubeUrl ?? `https://www.youtube.com/watch?v=${videoId}`,
+        embed_url: video.embedUrl ?? youtubeEmbed(videoId),
+        thumbnail_url: video.image ?? video.thumbnail ?? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+        raw: {
+          videoId,
+          title: video.title ?? "",
+          sourceProvider: video.sourceProvider ?? "youtube",
+          sourceUrl: video.sourceUrl ?? video.youtubeUrl ?? "",
+        },
+        updated_at: new Date().toISOString(),
+      };
+    })
+    .filter(Boolean);
+
+  const transmissions = allTransmissions.map((video: any, index: number) => {
+    const videoId = video.videoId ?? extractYouTubeId(video.youtubeUrl ?? video.sourceUrl ?? "");
+    return ({
     ...tableRowBase(video),
     code: video.code ?? `QE-TX-${String(index + 1).padStart(3, "0")}`,
-    youtube_url: video.youtubeUrl ?? "",
+    youtube_url: video.youtubeUrl ?? video.sourceUrl ?? "",
+    video_id: videoId,
+    embed_url: video.embedUrl ?? youtubeEmbed(videoId),
+    source_provider: video.sourceProvider ?? (videoId ? "youtube" : ""),
+    source_url: video.sourceUrl ?? video.youtubeUrl ?? "",
     category_slug: slugify(video.category ?? ""),
     published_at: video.publishedAt ?? video.year ?? "",
     year: String(video.year ?? video.publishedAt ?? ""),
@@ -57,7 +110,8 @@ export function mapContentToSupabaseRows(content: any) {
     ai_generated: Boolean(video.aiGenerated),
     ai_reviewed: Boolean(video.aiReviewed),
     ai_source_url: video.aiSourceUrl ?? "",
-  }));
+  });
+  });
 
   const archives = (content.archives ?? []).map((archive: any, index: number) => ({
     ...tableRowBase(archive),
@@ -115,7 +169,7 @@ export function mapContentToSupabaseRows(content: any) {
     { key: "terminalLines", value: content.terminalLines ?? [], updated_at: new Date().toISOString() },
   ];
 
-  return { categories, transmissions, archives, reports, timeline, settings };
+  return { categories, transmissions, sources, archives, reports, timeline, settings };
 }
 
 function conflictValue(row: any, onConflict: string) {
@@ -193,6 +247,7 @@ export async function importContentIntoSupabase(content: any) {
   const rows = mapContentToSupabaseRows(content);
   const steps: Array<[string, any[], string]> = [
     ["qe_categories", rows.categories, "slug"],
+    ["qe_sources", rows.sources, "provider,provider_id"],
     ["qe_transmissions", rows.transmissions, "slug"],
     ["qe_archives", rows.archives, "slug"],
     ["qe_reports", rows.reports, "code"],
@@ -260,6 +315,10 @@ function transmissionFromRow(row: any, categories: any[]) {
     ...camelBase(row),
     code: row.code ?? row.raw?.code ?? "",
     youtubeUrl: row.youtube_url ?? row.raw?.youtubeUrl ?? "",
+    videoId: row.video_id ?? row.raw?.videoId ?? extractYouTubeId(row.youtube_url ?? row.raw?.youtubeUrl ?? ""),
+    embedUrl: row.embed_url ?? row.raw?.embedUrl ?? youtubeEmbed(row.video_id ?? extractYouTubeId(row.youtube_url ?? row.raw?.youtubeUrl ?? "")),
+    sourceProvider: row.source_provider ?? row.raw?.sourceProvider ?? (row.youtube_url ? "youtube" : ""),
+    sourceUrl: row.source_url ?? row.raw?.sourceUrl ?? row.youtube_url ?? row.raw?.youtubeUrl ?? "",
     category: row.raw?.category ?? categoryTitleBySlug(categories, row.category_slug),
     publishedAt: row.published_at ?? row.raw?.publishedAt ?? "",
     year: row.year ?? row.raw?.year ?? "",
@@ -298,6 +357,10 @@ function reportFromRow(row: any, categories: any[]) {
     code: row.code ?? row.raw?.code ?? "",
     subtitle: row.subtitle ?? row.raw?.subtitle ?? "",
     youtubeUrl: row.youtube_url ?? row.raw?.youtubeUrl ?? "",
+    videoId: row.video_id ?? row.raw?.videoId ?? extractYouTubeId(row.youtube_url ?? row.raw?.youtubeUrl ?? ""),
+    embedUrl: row.embed_url ?? row.raw?.embedUrl ?? youtubeEmbed(row.video_id ?? extractYouTubeId(row.youtube_url ?? row.raw?.youtubeUrl ?? "")),
+    sourceProvider: row.source_provider ?? row.raw?.sourceProvider ?? (row.youtube_url ? "youtube" : ""),
+    sourceUrl: row.source_url ?? row.raw?.sourceUrl ?? row.youtube_url ?? row.raw?.youtubeUrl ?? "",
     category: row.raw?.category ?? categoryTitleBySlug(categories, row.category_slug),
     location: row.location ?? row.raw?.location ?? "",
     year: row.year ?? row.raw?.year ?? "",
@@ -479,7 +542,7 @@ export async function resetSupabaseEditorialArchive(options: { fullReset?: boole
   console.log("QE Editorial Reset", { fullReset, keepSettings });
   console.log("══════════════════════════════════════");
 
-  for (const table of ["qe_reports", "qe_timeline_events", "qe_archives", "qe_transmissions"]) {
+  for (const table of ["qe_reports", "qe_timeline_events", "qe_archives", "qe_transmissions", "qe_sources"]) {
     const result = await deleteAllRows(client, table);
     steps.push(result);
     console.log(`[QE RESET] OK ${table}`, result);
