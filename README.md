@@ -73,3 +73,8 @@ Leitura pública com Supabase como fonte principal e fallback automático para `
 - `content.json` permanece como backup/fallback local.
 - Admin lê conteúdo via Hybrid Read para refletir o banco.
 - Consulte `docs/SUPABASE_HYBRID_WRITE.md`.
+
+
+## v5.2.1 Save Debug
+
+Adiciona feedback visual no Admin, retorno detalhado de erros da API e logs `[QE SAVE]` para diagnosticar falhas de gravação no Supabase. Consulte `docs/SUPABASE_SAVE_DEBUG.md`.

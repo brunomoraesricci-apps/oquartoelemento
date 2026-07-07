@@ -118,11 +118,46 @@ export function mapContentToSupabaseRows(content: any) {
   return { categories, transmissions, archives, reports, timeline, settings };
 }
 
+function conflictValue(row: any, onConflict: string) {
+  return onConflict.split(",").map((key) => String(row?.[key.trim()] ?? "")).join("::");
+}
+
+function dedupeRows(rows: any[], onConflict: string) {
+  const seen = new Set<string>();
+  const output: any[] = [];
+  for (const row of rows) {
+    const key = conflictValue(row, onConflict);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    output.push(row);
+  }
+  return output;
+}
+
 async function upsertOrThrow(client: any, table: string, rows: any[], onConflict: string) {
-  if (!rows.length) return { table, count: 0 };
-  const { error } = await client.from(table).upsert(rows, { onConflict });
-  if (error) throw new Error(`${table}: ${error.message}`);
-  return { table, count: rows.length };
+  const startedAt = Date.now();
+  const cleanRows = dedupeRows(rows, onConflict);
+  if (!cleanRows.length) return { table, count: 0, durationMs: 0, skippedDuplicates: rows.length };
+
+  console.log(`[QE SAVE] Upserting ${table}`, { rows: cleanRows.length, onConflict, skippedDuplicates: rows.length - cleanRows.length });
+  const { error } = await client.from(table).upsert(cleanRows, { onConflict });
+  const durationMs = Date.now() - startedAt;
+
+  if (error) {
+    const debugError: any = new Error(`${table}: ${error.message}`);
+    debugError.table = table;
+    debugError.onConflict = onConflict;
+    debugError.supabase = {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    };
+    debugError.durationMs = durationMs;
+    throw debugError;
+  }
+
+  return { table, count: cleanRows.length, durationMs, skippedDuplicates: rows.length - cleanRows.length };
 }
 
 export async function getSupabaseStatus() {
@@ -156,13 +191,33 @@ export async function importContentIntoSupabase(content: any) {
   if (!client) throw new Error("SUPABASE_SERVICE_ROLE_KEY não configurada. Importação exige chave server-side.");
 
   const rows = mapContentToSupabaseRows(content);
+  const steps: Array<[string, any[], string]> = [
+    ["qe_categories", rows.categories, "slug"],
+    ["qe_transmissions", rows.transmissions, "slug"],
+    ["qe_archives", rows.archives, "slug"],
+    ["qe_reports", rows.reports, "code"],
+    ["qe_timeline_events", rows.timeline, "title,year"],
+    ["qe_site_settings", rows.settings, "key"],
+  ];
+
   const results = [];
-  results.push(await upsertOrThrow(client, "qe_categories", rows.categories, "slug"));
-  results.push(await upsertOrThrow(client, "qe_transmissions", rows.transmissions, "slug"));
-  results.push(await upsertOrThrow(client, "qe_archives", rows.archives, "slug"));
-  results.push(await upsertOrThrow(client, "qe_reports", rows.reports, "code"));
-  results.push(await upsertOrThrow(client, "qe_timeline_events", rows.timeline, "title,year"));
-  results.push(await upsertOrThrow(client, "qe_site_settings", rows.settings, "key"));
+  console.log("══════════════════════════════════════");
+  console.log("QE Content Save / Supabase Import");
+  console.log("══════════════════════════════════════");
+
+  for (const [table, tableRows, onConflict] of steps) {
+    try {
+      const result = await upsertOrThrow(client, table, tableRows, onConflict);
+      results.push(result);
+      console.log(`[QE SAVE] OK ${table}`, result);
+    } catch (error: any) {
+      error.completedSteps = results;
+      console.error(`[QE SAVE] ERROR ${table}`, error?.supabase ?? error);
+      throw error;
+    }
+  }
+
+  console.log("[QE SAVE] Completed", results);
   return results;
 }
 

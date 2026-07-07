@@ -3967,3 +3967,46 @@ main{position:relative;z-index:3}
     grid-template-columns:1fr;
   }
 }
+
+/* v5.2.1 Save Debug */
+.adminStatus{
+  max-width:1200px;
+  margin:0 auto 18px;
+  padding:14px 18px;
+  border:1px solid rgba(200,154,98,.22);
+  background:rgba(18,10,5,.76);
+  color:var(--gold2);
+  font-weight:800;
+  letter-spacing:.4px;
+}
+.adminStatusError{
+  border-color:rgba(216,54,36,.62);
+  background:rgba(80,12,8,.42);
+  color:#ffd4c8;
+}
+.saveDebug{
+  max-width:1200px;
+  margin:0 auto 18px;
+  padding:16px 18px;
+}
+.saveDebug summary{
+  cursor:pointer;
+  color:var(--gold2);
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:2px;
+}
+.saveDebug pre{
+  overflow:auto;
+  max-height:340px;
+  margin-top:14px;
+  padding:14px;
+  background:rgba(0,0,0,.42);
+  border:1px solid rgba(200,154,98,.16);
+  color:#f7e8c6;
+  font-size:12px;
+}
+.btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}

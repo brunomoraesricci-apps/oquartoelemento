@@ -675,6 +675,8 @@ export default function AdminPage() {
   const [content, setContent] = useState<any | null>(null);
   const [active, setActive] = useState<Section>("dashboard");
   const [status, setStatus] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveDebug, setSaveDebug] = useState<any | null>(null);
   const [backups, setBackups] = useState<BackupRecord[]>([]);
   useEffect(() => { fetch("/api/admin/content", { cache: "no-store" }).then((r) => r.json()).then(setContent); }, []);
   useEffect(() => { fetch("/api/admin/backups", { cache: "no-store" }).then((r) => r.json()).then((data) => setBackups(data.backups ?? [])).catch(() => setBackups([])); }, []);
@@ -685,10 +687,65 @@ export default function AdminPage() {
   function addItem(collection: string, item: any) { const clone = structuredClone(content); clone[collection] = [...(clone[collection] ?? []), item]; setContent(clone); }
   function removeItem(collection: string, index: number) { const clone = structuredClone(content); clone[collection] = clone[collection].filter((_: any, i: number) => i !== index); setContent(clone); }
   async function uploadImage(file: File) { const fd = new FormData(); fd.append("file", file); const res = await fetch("/api/admin/upload", { method: "POST", body: fd }); const data = await res.json(); return data.url; }
-  async function saveContent() { const clone = structuredClone(content); const heroSelected = [clone.featuredTransmission, ...(clone.videos ?? [])].filter((item: any) => item?.showInHero); clone.hero = clone.hero ?? {}; clone.hero.carouselSelectedSlugs = heroSelected.sort((a: any, b: any) => Number(a.heroOrder ?? 99) - Number(b.heroOrder ?? 99)).map((item: any) => item.slug); clone.hero.carouselItems = heroSelected.map((item: any) => ({ code: item.code, title: item.title, description: item.description, image: item.image, slug: item.slug, youtubeUrl: item.youtubeUrl, category: item.category })); const res = await fetch("/api/admin/content", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(clone) }); const data = await res.json().catch(() => ({})); if (res.ok) { const target = data.primaryTarget === "supabase" ? "Supabase" : "JSON"; const warning = data.warning ? ` Aviso: ${data.warning}` : ""; setStatus(`Conteúdo salvo em ${target} (${new Date().toLocaleTimeString()}).${warning}`); setContent({ ...clone, __source: "supabase" }); fetch("/api/admin/backups", { cache: "no-store" }).then((r) => r.json()).then((data) => setBackups(data.backups ?? [])).catch(() => setBackups([])); } else { setStatus(data.message ?? "Erro ao salvar conteúdo."); } }
+  async function saveContent() {
+    setIsSaving(true);
+    setStatus("Salvando alterações no Supabase...");
+    setSaveDebug(null);
+
+    const clone = structuredClone(content);
+    const heroSelected = [clone.featuredTransmission, ...(clone.videos ?? [])].filter((item: any) => item?.showInHero);
+    clone.hero = clone.hero ?? {};
+    clone.hero.carouselSelectedSlugs = heroSelected
+      .sort((a: any, b: any) => Number(a.heroOrder ?? 99) - Number(b.heroOrder ?? 99))
+      .map((item: any) => item.slug);
+    clone.hero.carouselItems = heroSelected.map((item: any) => ({
+      code: item.code,
+      title: item.title,
+      description: item.description,
+      image: item.image,
+      slug: item.slug,
+      youtubeUrl: item.youtubeUrl,
+      category: item.category,
+    }));
+
+    try {
+      const res = await fetch("/api/admin/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(clone),
+      });
+      const data = await res.json().catch(() => ({ message: "Resposta inválida do servidor." }));
+      setSaveDebug(data);
+
+      if (res.ok) {
+        const target = data.primaryTarget === "supabase" ? "Supabase" : "JSON";
+        const warning = data.warning ? ` Aviso: ${data.warning}` : "";
+        const duration = typeof data.durationMs === "number" ? ` em ${data.durationMs}ms` : "";
+        setStatus(`✅ Conteúdo salvo em ${target}${duration} (${new Date().toLocaleTimeString()}).${warning}`);
+        setContent({ ...clone, __source: "supabase" });
+        fetch("/api/admin/backups", { cache: "no-store" })
+          .then((r) => r.json())
+          .then((data) => setBackups(data.backups ?? []))
+          .catch(() => setBackups([]));
+      } else {
+        const table = data.table ? ` Tabela: ${data.table}.` : "";
+        const step = data.step ? ` Etapa: ${data.step}.` : "";
+        const details = data.supabase?.details ? ` Detalhes: ${data.supabase.details}.` : "";
+        setStatus(`❌ Falha ao salvar.${step}${table} ${data.message ?? "Erro desconhecido."}${details}`);
+        console.error("QE save failed", data);
+      }
+    } catch (error: any) {
+      const message = error?.message ?? "Erro inesperado ao salvar.";
+      setStatus(`❌ Falha ao salvar: ${message}`);
+      setSaveDebug({ ok: false, message });
+      console.error("QE save exception", error);
+    } finally {
+      setIsSaving(false);
+    }
+  }
   function downloadJson() { const blob = new Blob([JSON.stringify(content, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "content.json"; a.click(); URL.revokeObjectURL(url); }
   async function logout() { await fetch("/api/admin/logout", { method: "POST" }); window.location.href = "/admin/login"; }
-  return <main className="adminPage cmsPage"><header className="cmsTop"><div><span>QE Archive System</span><h1>Content Studio</h1><p>Gerencie o acervo sem editar código. A complexidade técnica fica recolhida; o foco fica no conteúdo.</p></div><div className="cmsTopActions"><button className="btn btnRed" onClick={saveContent}>Salvar alterações</button><button className="btn" onClick={downloadJson}>Baixar JSON</button><button className="btn" onClick={() => setActive("pipeline")}>Importar pacote</button><a className="btn" href="/">Ver site</a><button className="btn danger" onClick={logout}>Logout</button></div></header><section className="cmsShell"><aside className="cmsSidebar terminalPanel">{sidebarGroups.map((group) => <div className="cmsNavGroup" key={group.title}><span>{group.title}</span>{group.items.map((s) => <button className={active === s ? "active" : ""} key={s} onClick={() => setActive(s)}>{labels[s]}</button>)}</div>)}</aside><section className="cmsContent">{active === "dashboard" && stats && <AdminDashboard content={content} stats={stats} backups={backups} onNavigate={setActive} />}
+  return <main className="adminPage cmsPage"><header className="cmsTop"><div><span>QE Archive System</span><h1>Content Studio</h1><p>Gerencie o acervo sem editar código. A complexidade técnica fica recolhida; o foco fica no conteúdo.</p></div><div className="cmsTopActions"><button className="btn btnRed" onClick={saveContent} disabled={isSaving}>{isSaving ? "Salvando..." : "Salvar alterações"}</button><button className="btn" onClick={downloadJson}>Baixar JSON</button><button className="btn" onClick={() => setActive("pipeline")}>Importar pacote</button><a className="btn" href="/">Ver site</a><button className="btn danger" onClick={logout}>Logout</button></div></header>{status && <div className={status.startsWith("❌") ? "adminStatus adminStatusError" : "adminStatus"}>{status}</div>}{saveDebug && !saveDebug.ok && <details className="terminalPanel saveDebug"><summary>Detalhes técnicos do último save</summary><pre>{JSON.stringify(saveDebug, null, 2)}</pre></details>}<section className="cmsShell"><aside className="cmsSidebar terminalPanel">{sidebarGroups.map((group) => <div className="cmsNavGroup" key={group.title}><span>{group.title}</span>{group.items.map((s) => <button className={active === s ? "active" : ""} key={s} onClick={() => setActive(s)}>{labels[s]}</button>)}</div>)}</aside><section className="cmsContent">{active === "dashboard" && stats && <AdminDashboard content={content} stats={stats} backups={backups} onNavigate={setActive} />}
     {active === "transmissions" && <CollectionManager title="Transmissões" type="transmission" items={content.videos ?? []} content={content} uploadImage={uploadImage} groups={transmissionGroups} onAdd={() => addItem("videos", emptyTransmission(content.videos?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("videos", i, v)} onRemove={(i: number) => removeItem("videos", i)} />}
   {active === "archives" && <CollectionManager title="Arquivos" type="archive" items={content.archives ?? []} content={content} uploadImage={uploadImage} groups={archiveGroups} onAdd={() => addItem("archives", emptyArchive(content.archives?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("archives", i, v)} onRemove={(i: number) => removeItem("archives", i)} />}
   {active === "reports" && <CollectionManager title="Relatos" type="report" items={content.relatos ?? []} content={content} uploadImage={uploadImage} groups={reportGroups} onAdd={() => addItem("relatos", emptyReport(content.relatos?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("relatos", i, v)} onRemove={(i: number) => removeItem("relatos", i)} />}
@@ -699,5 +756,5 @@ export default function AdminPage() {
   {active === "hero" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Publicação</span><h2>Hero principal</h2></div></div><div className="cmsEditorGrid"><div>{["eyebrow", "title", "subtitle", "description", "image", "primaryActionLabel", "secondaryActionLabel", "featuredArchiveSlug", "featuredTransmissionSlug", "featuredTransmissionYoutubeUrl"].map((f) => f === "image" ? <UploadField key={f} label={label(f)} value={content.hero?.[f] ?? ""} onChange={(v) => update(`hero.${f}`, v)} onUpload={uploadImage} /> : <TextField key={f} label={label(f)} value={content.hero?.[f] ?? ""} textarea={f === "description"} onChange={(v) => update(`hero.${f}`, v)} />)}<div className="cmsField"><span>Carrossel do Hero</span><p className="cmsHint">Marque “Exibir no Hero” nas transmissões para controlar o carrossel.</p></div></div><PreviewCard item={{ title: content.hero?.title, description: content.hero?.description, image: content.hero?.image, category: "Hero", status: "Ativo" }} type="Hero" /></div></div>}
   {active === "settings" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Sistema</span><h2>Configurações do site</h2></div></div><div className="cmsEditorGrid single"><div><TextField label="Título do site" value={content.site?.title} onChange={(v) => update("site.title", v)} /><TextField label="Tagline" value={content.site?.tagline} onChange={(v) => update("site.tagline", v)} /><TextField label="Descrição" value={content.site?.description} textarea onChange={(v) => update("site.description", v)} /><TextField label="E-mail de relatos" value={content.site?.emailRelatos} onChange={(v) => update("site.emailRelatos", v)} /><TextField label="URL YouTube" value={content.site?.youtubeUrl} onChange={(v) => update("site.youtubeUrl", v)} /><TextField label="URL Instagram" value={content.site?.instagramUrl} onChange={(v) => update("site.instagramUrl", v)} /></div></div></div>}
   {active === "json" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Modo desenvolvedor</span><h2>JSON completo</h2></div></div><p className="cmsHint devHint">Use apenas para backup, conferência avançada ou correções pontuais. O fluxo principal agora é pelo Content Studio.</p><textarea className="jsonEditor" value={JSON.stringify(content, null, 2)} onChange={(e) => { try { setContent(JSON.parse(e.target.value)); } catch { setStatus("JSON inválido."); } }} /></div>}
-  {status && <p className="adminStatus">{status}</p>}</section></section></main>;
+  </section></section></main>;
 }
