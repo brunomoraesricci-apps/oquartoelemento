@@ -1,0 +1,910 @@
+{
+  "site": {
+    "title": "O Quarto Elemento",
+    "tagline": "O desconhecido é real",
+    "description": "Um arquivo digital vivo dedicado a mistérios, casos reais, lendas e relatos proibidos.",
+    "emailRelatos": "relatos@oquartoelemento.com.br",
+    "youtubeUrl": "https://www.youtube.com/@oquartoelemento"
+  },
+  "terminalLines": [
+    "ACCESSING_ARCHIVE...",
+    "LOADING: TOP10_DESAPARECIMENTOS.mp4",
+    "DECRYPTING: OPERACAO_PRATO.qe",
+    "SEARCHING: RELATOS_PROIBIDOS",
+    "OPENING: RP-002_CONTRATO_EXCLUSIVO",
+    "SIGNAL: ACTIVE",
+    "ARCHIVE STATUS: ONLINE"
+  ],
+  "categories": [
+    {
+      "title": "OVNIs e Fenômenos",
+      "symbol": "☿",
+      "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
+      "slug": "ovnis-e-fenomenos",
+      "description": "Arquivos relacionados a OVNIs e Fenômenos.",
+      "active": true
+    },
+    {
+      "title": "Desaparecimentos",
+      "symbol": "⌖",
+      "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80",
+      "slug": "desaparecimentos",
+      "description": "Arquivos relacionados a Desaparecimentos.",
+      "active": true
+    },
+    {
+      "title": "Lendas e Mitos",
+      "symbol": "✦",
+      "image": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=1200&q=80",
+      "slug": "lendas-e-mitos",
+      "description": "Arquivos relacionados a Lendas e Mitos.",
+      "active": true
+    },
+    {
+      "title": "Civilizações Perdidas",
+      "symbol": "△",
+      "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80",
+      "slug": "civilizacoes-perdidas",
+      "description": "Arquivos relacionados a Civilizações Perdidas.",
+      "active": true
+    },
+    {
+      "title": "Relatos Proibidos",
+      "symbol": "◌",
+      "image": "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=1200&q=80",
+      "slug": "relatos-proibidos",
+      "description": "Arquivos relacionados a Relatos Proibidos.",
+      "active": true
+    },
+    {
+      "title": "Deep Web",
+      "symbol": "◇",
+      "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80",
+      "slug": "deep-web",
+      "description": "Arquivos relacionados a Deep Web.",
+      "active": true
+    },
+    {
+      "title": "Relatos",
+      "slug": "relatos",
+      "symbol": "◇",
+      "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+      "description": "Relatos enviados pela comunidade e relacionados a publicações do canal.",
+      "active": true
+    }
+  ],
+  "featuredCase": {
+    "code": "QE-001",
+    "title": "Operação Prato",
+    "subtitle": "Brasil • 1977 • Classificação: Confidencial",
+    "description": "A maior investigação ufológica oficial do Brasil. Documentos, gravações e testemunhos que ainda hoje permanecem envoltos em sigilo.",
+    "image": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80",
+    "slug": "operacao-prato"
+  },
+  "videos": [
+    {
+      "code": "QE-V-021",
+      "title": "O Mistério de Dyatlov Pass",
+      "views": "2,4 mil visualizações",
+      "date": "há 2 dias",
+      "duration": "24:37",
+      "image": "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1200&q=80",
+      "youtubeUrl": "#",
+      "description": "Abrir transmissão no arquivo.",
+      "slug": "o-misterio-de-dyatlov-pass",
+      "category": "Mistérios",
+      "publishedAt": "2026",
+      "tags": [
+        "Mistério",
+        "Arquivo",
+        "Quarto Elemento"
+      ],
+      "relatedArchives": [
+        "QE-001",
+        "QE-002"
+      ],
+      "year": "2026",
+      "location": "Arquivo Digital",
+      "status": "Publicado",
+      "showInHero": true,
+      "heroOrder": 1
+    },
+    {
+      "code": "QE-V-022",
+      "title": "Top 10 Mistérios Brasileiros",
+      "views": "3,1 mil visualizações",
+      "date": "há 5 dias",
+      "duration": "22:15",
+      "image": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1200&q=80",
+      "youtubeUrl": "#",
+      "description": "Abrir transmissão no arquivo.",
+      "slug": "top-10-misterios-brasileiros",
+      "category": "Mistérios",
+      "publishedAt": "2026",
+      "tags": [
+        "Mistério",
+        "Arquivo",
+        "Quarto Elemento"
+      ],
+      "relatedArchives": [
+        "QE-001",
+        "QE-002"
+      ],
+      "year": "2026",
+      "location": "Arquivo Digital",
+      "status": "Publicado",
+      "showInHero": true,
+      "heroOrder": 2
+    },
+    {
+      "code": "QE-V-023",
+      "title": "A Ilha da Trindade e o OVNI",
+      "views": "1,8 mil visualizações",
+      "date": "há 1 semana",
+      "duration": "18:42",
+      "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+      "youtubeUrl": "#",
+      "description": "Abrir transmissão no arquivo.",
+      "slug": "a-ilha-da-trindade-e-o-ovni",
+      "category": "Mistérios",
+      "publishedAt": "2026",
+      "tags": [
+        "Mistério",
+        "Arquivo",
+        "Quarto Elemento"
+      ],
+      "relatedArchives": [
+        "QE-001",
+        "QE-002"
+      ],
+      "year": "2026",
+      "location": "Arquivo Digital",
+      "status": "Publicado",
+      "showInHero": true,
+      "heroOrder": 3
+    },
+    {
+      "code": "QE-V-024",
+      "title": "As Máscaras de Chumbo de Niterói",
+      "views": "2,7 mil visualizações",
+      "date": "há 1 semana",
+      "duration": "20:11",
+      "image": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=1200&q=80",
+      "youtubeUrl": "#",
+      "description": "Abrir transmissão no arquivo.",
+      "slug": "as-mascaras-de-chumbo-de-niteroi",
+      "category": "Mistérios",
+      "publishedAt": "2026",
+      "tags": [
+        "Mistério",
+        "Arquivo",
+        "Quarto Elemento"
+      ],
+      "relatedArchives": [
+        "QE-001",
+        "QE-002"
+      ],
+      "year": "2026",
+      "location": "Arquivo Digital",
+      "status": "Publicado",
+      "showInHero": true,
+      "heroOrder": 4
+    }
+  ],
+  "relatos": [
+    {
+      "code": "RP-027",
+      "title": "Aceitei um Contrato Exclusivo",
+      "subtitle": "Relato #027",
+      "slug": "aceitei-um-contrato-exclusivo",
+      "category": "Relatos",
+      "location": "Brasil",
+      "year": "2026",
+      "status": "Recebido",
+      "description": "Relato #027",
+      "tags": [
+        "Relato",
+        "Comunidade",
+        "Arquivo"
+      ],
+      "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+      "youtubeUrl": ""
+    },
+    {
+      "code": "RP-026",
+      "title": "A Vigia da Escola",
+      "subtitle": "Relato #026",
+      "slug": "a-vigia-da-escola",
+      "category": "Relatos",
+      "location": "Brasil",
+      "year": "2026",
+      "status": "Recebido",
+      "description": "Relato #026",
+      "tags": [
+        "Relato",
+        "Comunidade",
+        "Arquivo"
+      ],
+      "image": "/images/identity-alt.png",
+      "youtubeUrl": ""
+    },
+    {
+      "code": "RP-025",
+      "title": "O Médico da Ala B",
+      "subtitle": "Relato #025",
+      "slug": "o-m-dico-da-ala-b",
+      "category": "Relatos",
+      "location": "Brasil",
+      "year": "2026",
+      "status": "Recebido",
+      "description": "Relato #025",
+      "tags": [
+        "Relato",
+        "Comunidade",
+        "Arquivo"
+      ],
+      "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+      "youtubeUrl": ""
+    },
+    {
+      "code": "RP-024",
+      "title": "A Luz Sobre a Rodovia",
+      "subtitle": "Relato #024",
+      "slug": "a-luz-sobre-a-rodovia",
+      "category": "Relatos",
+      "location": "Brasil",
+      "year": "2026",
+      "status": "Recebido",
+      "description": "Relato #024",
+      "tags": [
+        "Relato",
+        "Comunidade",
+        "Arquivo"
+      ],
+      "image": "/images/identity-alt.png",
+      "youtubeUrl": ""
+    },
+    {
+      "code": "RP-023",
+      "title": "O Sinal Depois da Meia-Noite",
+      "subtitle": "Relato #023",
+      "slug": "o-sinal-depois-da-meia-noite",
+      "category": "Relatos",
+      "location": "Brasil",
+      "year": "2026",
+      "status": "Recebido",
+      "description": "Relato #023",
+      "tags": [
+        "Relato",
+        "Comunidade",
+        "Arquivo"
+      ],
+      "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+      "youtubeUrl": ""
+    },
+    {
+      "code": "RP-022",
+      "title": "A Casa que Não Aparecia no Mapa",
+      "subtitle": "Relato #022",
+      "slug": "a-casa-que-n-o-aparecia-no-mapa",
+      "category": "Relatos",
+      "location": "Brasil",
+      "year": "2026",
+      "status": "Recebido",
+      "description": "Relato #022",
+      "tags": [
+        "Relato",
+        "Comunidade",
+        "Arquivo"
+      ],
+      "image": "/images/identity-alt.png",
+      "youtubeUrl": ""
+    }
+  ],
+  "timeline": [
+    {
+      "year": "1957",
+      "title": "Ubatuba",
+      "text": "Objetos luminosos são vistos caindo no mar."
+    },
+    {
+      "year": "1977",
+      "title": "Operação Prato",
+      "text": "Força Aérea investiga centenas de casos de OVNIs."
+    },
+    {
+      "year": "1986",
+      "title": "Noite Oficial dos OVNIs",
+      "text": "Várias cidades registram fenômenos na mesma noite."
+    },
+    {
+      "year": "1992",
+      "title": "Ilha da Trindade",
+      "text": "Militares avistam luzes não identificadas."
+    },
+    {
+      "year": "1996",
+      "title": "Máscaras de Chumbo",
+      "text": "Dois homens são encontrados mortos com máscaras enigmáticas."
+    },
+    {
+      "year": "Hoje",
+      "title": "O desconhecido continua",
+      "text": "Novos relatos, documentos e perguntas."
+    }
+  ],
+  "featuredTransmission": {
+    "code": "QE-TX-010",
+    "title": "Top 10 Desaparecimentos Mais Misteriosos",
+    "subtitle": "Última transmissão",
+    "description": "Um dossiê cinematográfico com casos que atravessaram décadas e continuam deixando perguntas sem resposta.",
+    "duration": "28:14",
+    "youtubeUrl": "#",
+    "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+    "slug": "top-10-desaparecimentos-mais-misteriosos",
+    "category": "Desaparecimentos",
+    "publishedAt": "2026",
+    "tags": [
+      "Desaparecimentos",
+      "Casos reais",
+      "Mistério"
+    ],
+    "relatedArchives": [
+      "QE-001",
+      "QE-002",
+      "QE-003"
+    ],
+    "year": "2026",
+    "location": "Arquivo Digital"
+  },
+  "archives": [
+    {
+      "code": "QE-001",
+      "title": "Operação Prato",
+      "type": "Caso",
+      "category": "OVNIs",
+      "location": "Brasil",
+      "year": "1977",
+      "status": "Confidencial",
+      "description": "A maior investigação ufológica oficial do Brasil.",
+      "image": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
+      "slug": "operacao-prato",
+      "classification": "Confidencial",
+      "accessLevel": "LV.04",
+      "summary": "A maior investigação ufológica oficial do Brasil.",
+      "longDescription": "O dossiê QE-001 reúne informações sobre Operação Prato, organizadas em formato de arquivo investigativo para facilitar consulta, análise e expansão futura.",
+      "relatedTransmissionSlug": "top-10-desaparecimentos-mais-misteriosos",
+      "tags": [
+        "OVNIs",
+        "Brasil",
+        "Dossiê"
+      ],
+      "sections": [
+        {
+          "title": "Resumo do caso",
+          "text": "Este dossiê reúne registros, relatos e conexões documentais para consulta pública dentro do Arquivo Digital do Quarto Elemento."
+        },
+        {
+          "title": "Pontos de investigação",
+          "text": "Os eventos catalogados ainda apresentam lacunas, versões conflitantes ou elementos que permanecem sem explicação definitiva."
+        },
+        {
+          "title": "Estado atual",
+          "text": "Arquivo em revisão. Novas informações podem ser adicionadas conforme relatos, documentos e transmissões forem produzidos."
+        }
+      ],
+      "documents": [
+        {
+          "title": "Registro principal",
+          "type": "Documento",
+          "status": "Catalogado"
+        },
+        {
+          "title": "Linha de eventos",
+          "type": "Cronologia",
+          "status": "Em análise"
+        },
+        {
+          "title": "Relatos relacionados",
+          "type": "Testemunhos",
+          "status": "Pendente"
+        }
+      ],
+      "gallery": [
+        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "views": 9040
+    },
+    {
+      "code": "QE-002",
+      "title": "Passo de Dyatlov",
+      "type": "Caso",
+      "category": "Desaparecimento",
+      "location": "Rússia",
+      "year": "1959",
+      "status": "Sem explicação",
+      "description": "Nove excursionistas, uma morte misteriosa e muitas teorias.",
+      "image": "https://images.unsplash.com/photo-1477601263568-180e2c6d046e?auto=format&fit=crop&w=1200&q=80",
+      "slug": "passo-de-dyatlov",
+      "classification": "Sem explicação",
+      "accessLevel": "LV.04",
+      "summary": "Nove excursionistas, uma morte misteriosa e muitas teorias.",
+      "longDescription": "O dossiê QE-002 reúne informações sobre Passo de Dyatlov, organizadas em formato de arquivo investigativo para facilitar consulta, análise e expansão futura.",
+      "relatedTransmissionSlug": "top-10-desaparecimentos-mais-misteriosos",
+      "tags": [
+        "Desaparecimento",
+        "Rússia",
+        "Dossiê"
+      ],
+      "sections": [
+        {
+          "title": "Resumo do caso",
+          "text": "Este dossiê reúne registros, relatos e conexões documentais para consulta pública dentro do Arquivo Digital do Quarto Elemento."
+        },
+        {
+          "title": "Pontos de investigação",
+          "text": "Os eventos catalogados ainda apresentam lacunas, versões conflitantes ou elementos que permanecem sem explicação definitiva."
+        },
+        {
+          "title": "Estado atual",
+          "text": "Arquivo em revisão. Novas informações podem ser adicionadas conforme relatos, documentos e transmissões forem produzidos."
+        }
+      ],
+      "documents": [
+        {
+          "title": "Registro principal",
+          "type": "Documento",
+          "status": "Catalogado"
+        },
+        {
+          "title": "Linha de eventos",
+          "type": "Cronologia",
+          "status": "Em análise"
+        },
+        {
+          "title": "Relatos relacionados",
+          "type": "Testemunhos",
+          "status": "Pendente"
+        }
+      ],
+      "gallery": [
+        "https://images.unsplash.com/photo-1477601263568-180e2c6d046e?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "views": 8280
+    },
+    {
+      "code": "QE-003",
+      "title": "Incidente de Ubatuba",
+      "type": "Caso",
+      "category": "OVNIs",
+      "location": "Brasil",
+      "year": "1957",
+      "status": "Aberto",
+      "description": "Fragmentos metálicos, testemunhas e uma história cercada de dúvidas.",
+      "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+      "slug": "incidente-de-ubatuba",
+      "classification": "Aberto",
+      "accessLevel": "LV.04",
+      "summary": "Fragmentos metálicos, testemunhas e uma história cercada de dúvidas.",
+      "longDescription": "O dossiê QE-003 reúne informações sobre Incidente de Ubatuba, organizadas em formato de arquivo investigativo para facilitar consulta, análise e expansão futura.",
+      "relatedTransmissionSlug": "top-10-desaparecimentos-mais-misteriosos",
+      "tags": [
+        "OVNIs",
+        "Brasil",
+        "Dossiê"
+      ],
+      "sections": [
+        {
+          "title": "Resumo do caso",
+          "text": "Este dossiê reúne registros, relatos e conexões documentais para consulta pública dentro do Arquivo Digital do Quarto Elemento."
+        },
+        {
+          "title": "Pontos de investigação",
+          "text": "Os eventos catalogados ainda apresentam lacunas, versões conflitantes ou elementos que permanecem sem explicação definitiva."
+        },
+        {
+          "title": "Estado atual",
+          "text": "Arquivo em revisão. Novas informações podem ser adicionadas conforme relatos, documentos e transmissões forem produzidos."
+        }
+      ],
+      "documents": [
+        {
+          "title": "Registro principal",
+          "type": "Documento",
+          "status": "Catalogado"
+        },
+        {
+          "title": "Linha de eventos",
+          "type": "Cronologia",
+          "status": "Em análise"
+        },
+        {
+          "title": "Relatos relacionados",
+          "type": "Testemunhos",
+          "status": "Pendente"
+        }
+      ],
+      "gallery": [
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "views": 7520
+    },
+    {
+      "code": "QE-004",
+      "title": "Noite Oficial dos OVNIs",
+      "type": "Caso",
+      "category": "OVNIs",
+      "location": "Brasil",
+      "year": "1986",
+      "status": "Aberto",
+      "description": "A noite em que objetos não identificados foram perseguidos por caças da Força Aérea Brasileira.",
+      "image": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1200&q=80",
+      "slug": "noite-oficial-dos-ovnis",
+      "classification": "Aberto",
+      "accessLevel": "LV.04",
+      "summary": "A noite em que objetos não identificados foram perseguidos por caças da Força Aérea Brasileira.",
+      "longDescription": "O dossiê QE-004 reúne informações sobre Noite Oficial dos OVNIs, organizadas em formato de arquivo investigativo para facilitar consulta, análise e expansão futura.",
+      "relatedTransmissionSlug": "top-10-desaparecimentos-mais-misteriosos",
+      "tags": [
+        "OVNIs",
+        "Brasil",
+        "Dossiê"
+      ],
+      "sections": [
+        {
+          "title": "Resumo do caso",
+          "text": "Este dossiê reúne registros, relatos e conexões documentais para consulta pública dentro do Arquivo Digital do Quarto Elemento."
+        },
+        {
+          "title": "Pontos de investigação",
+          "text": "Os eventos catalogados ainda apresentam lacunas, versões conflitantes ou elementos que permanecem sem explicação definitiva."
+        },
+        {
+          "title": "Estado atual",
+          "text": "Arquivo em revisão. Novas informações podem ser adicionadas conforme relatos, documentos e transmissões forem produzidos."
+        }
+      ],
+      "documents": [
+        {
+          "title": "Registro principal",
+          "type": "Documento",
+          "status": "Catalogado"
+        },
+        {
+          "title": "Linha de eventos",
+          "type": "Cronologia",
+          "status": "Em análise"
+        },
+        {
+          "title": "Relatos relacionados",
+          "type": "Testemunhos",
+          "status": "Pendente"
+        }
+      ],
+      "gallery": [
+        "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "views": 6760
+    },
+    {
+      "code": "QE-005",
+      "title": "Máscaras de Chumbo",
+      "type": "Caso",
+      "category": "Mistérios Brasileiros",
+      "location": "Niterói",
+      "year": "1966",
+      "status": "Sem explicação",
+      "description": "Dois homens encontrados mortos em uma colina, usando máscaras de chumbo e cercados por bilhetes enigmáticos.",
+      "image": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=1200&q=80",
+      "slug": "mascaras-de-chumbo",
+      "classification": "Sem explicação",
+      "accessLevel": "LV.04",
+      "summary": "Dois homens encontrados mortos em uma colina, usando máscaras de chumbo e cercados por bilhetes enigmáticos.",
+      "longDescription": "O dossiê QE-005 reúne informações sobre Máscaras de Chumbo, organizadas em formato de arquivo investigativo para facilitar consulta, análise e expansão futura.",
+      "relatedTransmissionSlug": "top-10-desaparecimentos-mais-misteriosos",
+      "tags": [
+        "Mistérios Brasileiros",
+        "Niterói",
+        "Dossiê"
+      ],
+      "sections": [
+        {
+          "title": "Resumo do caso",
+          "text": "Este dossiê reúne registros, relatos e conexões documentais para consulta pública dentro do Arquivo Digital do Quarto Elemento."
+        },
+        {
+          "title": "Pontos de investigação",
+          "text": "Os eventos catalogados ainda apresentam lacunas, versões conflitantes ou elementos que permanecem sem explicação definitiva."
+        },
+        {
+          "title": "Estado atual",
+          "text": "Arquivo em revisão. Novas informações podem ser adicionadas conforme relatos, documentos e transmissões forem produzidos."
+        }
+      ],
+      "documents": [
+        {
+          "title": "Registro principal",
+          "type": "Documento",
+          "status": "Catalogado"
+        },
+        {
+          "title": "Linha de eventos",
+          "type": "Cronologia",
+          "status": "Em análise"
+        },
+        {
+          "title": "Relatos relacionados",
+          "type": "Testemunhos",
+          "status": "Pendente"
+        }
+      ],
+      "gallery": [
+        "https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "views": 6000
+    },
+    {
+      "code": "QE-006",
+      "title": "Pedra do Ingá",
+      "type": "Arquivo",
+      "category": "Civilizações Perdidas",
+      "location": "Paraíba",
+      "year": "Indefinido",
+      "status": "Em análise",
+      "description": "Inscrições misteriosas gravadas em pedra, interpretadas por alguns como vestígios de uma civilização perdida.",
+      "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80",
+      "slug": "pedra-do-inga",
+      "classification": "Em análise",
+      "accessLevel": "LV.04",
+      "summary": "Inscrições misteriosas gravadas em pedra, interpretadas por alguns como vestígios de uma civilização perdida.",
+      "longDescription": "O dossiê QE-006 reúne informações sobre Pedra do Ingá, organizadas em formato de arquivo investigativo para facilitar consulta, análise e expansão futura.",
+      "relatedTransmissionSlug": "top-10-desaparecimentos-mais-misteriosos",
+      "tags": [
+        "Civilizações Perdidas",
+        "Paraíba",
+        "Dossiê"
+      ],
+      "sections": [
+        {
+          "title": "Resumo do caso",
+          "text": "Este dossiê reúne registros, relatos e conexões documentais para consulta pública dentro do Arquivo Digital do Quarto Elemento."
+        },
+        {
+          "title": "Pontos de investigação",
+          "text": "Os eventos catalogados ainda apresentam lacunas, versões conflitantes ou elementos que permanecem sem explicação definitiva."
+        },
+        {
+          "title": "Estado atual",
+          "text": "Arquivo em revisão. Novas informações podem ser adicionadas conforme relatos, documentos e transmissões forem produzidos."
+        }
+      ],
+      "documents": [
+        {
+          "title": "Registro principal",
+          "type": "Documento",
+          "status": "Catalogado"
+        },
+        {
+          "title": "Linha de eventos",
+          "type": "Cronologia",
+          "status": "Em análise"
+        },
+        {
+          "title": "Relatos relacionados",
+          "type": "Testemunhos",
+          "status": "Pendente"
+        }
+      ],
+      "gallery": [
+        "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "views": 5240
+    }
+  ],
+  "sections": {
+    "featuredTransmission": true,
+    "categories": true,
+    "featuredCase": true,
+    "archives": true,
+    "transmissions": true,
+    "reports": true,
+    "timeline": true,
+    "newsletter": true,
+    "intelligence": true
+  },
+  "discovery": {
+    "featuredStates": [
+      {
+        "state": "PA",
+        "label": "Pará",
+        "x": 48,
+        "y": 34,
+        "archiveCodes": [
+          "QE-001",
+          "QE-004"
+        ]
+      },
+      {
+        "state": "SP",
+        "label": "São Paulo",
+        "x": 58,
+        "y": 72,
+        "archiveCodes": [
+          "QE-003"
+        ]
+      },
+      {
+        "state": "RJ",
+        "label": "Rio de Janeiro",
+        "x": 65,
+        "y": 75,
+        "archiveCodes": [
+          "QE-005"
+        ]
+      },
+      {
+        "state": "PB",
+        "label": "Paraíba",
+        "x": 78,
+        "y": 43,
+        "archiveCodes": [
+          "QE-006"
+        ]
+      },
+      {
+        "state": "MG",
+        "label": "Minas Gerais",
+        "x": 62,
+        "y": 66,
+        "archiveCodes": [
+          "QE-004"
+        ]
+      }
+    ]
+  },
+  "featuredArchive": {
+    "code": "QE-001",
+    "title": "Operação Prato",
+    "type": "Caso",
+    "category": "OVNIs",
+    "location": "Brasil",
+    "year": "1977",
+    "status": "Confidencial",
+    "description": "A maior investigação ufológica oficial do Brasil.",
+    "image": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
+    "slug": "operacao-prato",
+    "classification": "Confidencial",
+    "accessLevel": "LV.04",
+    "summary": "A maior investigação ufológica oficial do Brasil.",
+    "longDescription": "O dossiê QE-001 reúne informações sobre Operação Prato, organizadas em formato de arquivo investigativo para facilitar consulta, análise e expansão futura.",
+    "relatedTransmissionSlug": "top-10-desaparecimentos-mais-misteriosos",
+    "tags": [
+      "OVNIs",
+      "Brasil",
+      "Dossiê"
+    ],
+    "sections": [
+      {
+        "title": "Resumo do caso",
+        "text": "Este dossiê reúne registros, relatos e conexões documentais para consulta pública dentro do Arquivo Digital do Quarto Elemento."
+      },
+      {
+        "title": "Pontos de investigação",
+        "text": "Os eventos catalogados ainda apresentam lacunas, versões conflitantes ou elementos que permanecem sem explicação definitiva."
+      },
+      {
+        "title": "Estado atual",
+        "text": "Arquivo em revisão. Novas informações podem ser adicionadas conforme relatos, documentos e transmissões forem produzidos."
+      }
+    ],
+    "documents": [
+      {
+        "title": "Registro principal",
+        "type": "Documento",
+        "status": "Catalogado"
+      },
+      {
+        "title": "Linha de eventos",
+        "type": "Cronologia",
+        "status": "Em análise"
+      },
+      {
+        "title": "Relatos relacionados",
+        "type": "Testemunhos",
+        "status": "Pendente"
+      }
+    ],
+    "gallery": [
+      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80"
+    ],
+    "views": 9040
+  },
+  "hero": {
+    "eyebrow": "TRANSMISSÃO PROIBIDA",
+    "title": "O Quarto Elemento",
+    "subtitle": "O desconhecido é real",
+    "description": "Um arquivo digital vivo dedicado a mistérios, casos reais, lendas e relatos proibidos.",
+    "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+    "primaryActionLabel": "Abrir dossiê",
+    "secondaryActionLabel": "Assistir transmissão",
+    "featuredArchiveSlug": "operacao-prato",
+    "featuredTransmissionSlug": "top-10-desaparecimentos-mais-misteriosos",
+    "featuredTransmissionYoutubeUrl": "#",
+    "miniLinks": [
+      {
+        "label": "Operação Prato",
+        "href": "/arquivos/operacao-prato"
+      },
+      {
+        "label": "Passo de Dyatlov",
+        "href": "/arquivos/passo-de-dyatlov"
+      },
+      {
+        "label": "Incidente de Ubatuba",
+        "href": "/arquivos/incidente-de-ubatuba"
+      },
+      {
+        "label": "Noite Oficial dos OVNIs",
+        "href": "/arquivos/noite-oficial-dos-ovnis"
+      },
+      {
+        "label": "Máscaras de Chumbo",
+        "href": "/arquivos/mascaras-de-chumbo"
+      }
+    ],
+    "carouselItems": [
+      {
+        "code": "QE-TX-010",
+        "title": "Top 10 Desaparecimentos Mais Misteriosos",
+        "description": "Um dossiê cinematográfico com casos que atravessaram décadas e continuam deixando perguntas sem resposta.",
+        "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+        "slug": "top-10-desaparecimentos-mais-misteriosos",
+        "youtubeUrl": "#",
+        "category": "Desaparecimentos"
+      },
+      {
+        "code": "QE-V-021",
+        "title": "O Mistério de Dyatlov Pass",
+        "description": "Abrir transmissão no arquivo.",
+        "image": "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1200&q=80",
+        "slug": "o-misterio-de-dyatlov-pass",
+        "youtubeUrl": "#",
+        "category": "Mistérios"
+      },
+      {
+        "code": "QE-V-022",
+        "title": "Top 10 Mistérios Brasileiros",
+        "description": "Abrir transmissão no arquivo.",
+        "image": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1200&q=80",
+        "slug": "top-10-misterios-brasileiros",
+        "youtubeUrl": "#",
+        "category": "Mistérios"
+      },
+      {
+        "code": "QE-V-023",
+        "title": "A Ilha da Trindade e o OVNI",
+        "description": "Abrir transmissão no arquivo.",
+        "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+        "slug": "a-ilha-da-trindade-e-o-ovni",
+        "youtubeUrl": "#",
+        "category": "Mistérios"
+      },
+      {
+        "code": "QE-V-024",
+        "title": "As Máscaras de Chumbo de Niterói",
+        "description": "Abrir transmissão no arquivo.",
+        "image": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=1200&q=80",
+        "slug": "as-mascaras-de-chumbo-de-niteroi",
+        "youtubeUrl": "#",
+        "category": "Mistérios"
+      }
+    ],
+    "carouselSelectedSlugs": [
+      "top-10-desaparecimentos-mais-misteriosos",
+      "o-misterio-de-dyatlov-pass",
+      "top-10-misterios-brasileiros",
+      "a-ilha-da-trindade-e-o-ovni",
+      "as-mascaras-de-chumbo-de-niteroi"
+    ]
+  }
+}
