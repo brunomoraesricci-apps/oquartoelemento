@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-type Section = "dashboard" | "transmissions" | "archives" | "reports" | "categories" | "youtube" | "pipeline" | "hero" | "timeline" | "database" | "diagnostics" | "settings" | "json";
+type Section = "dashboard" | "transmissions" | "archives" | "reports" | "categories" | "youtube" | "pipeline" | "hero" | "timeline" | "graph" | "database" | "diagnostics" | "settings" | "json";
 
 type FieldGroup = {
   title: string;
@@ -22,6 +22,7 @@ const labels: Record<Section, string> = {
   hero: "Hero",
   timeline: "Timeline",
   database: "Fonte de Dados",
+  graph: "Grafo",
   diagnostics: "Diagnóstico",
   settings: "Configurações",
   json: "Modo Dev",
@@ -31,6 +32,7 @@ const sidebarGroups: { title: string; items: Section[] }[] = [
   { title: "Central", items: ["dashboard"] },
   { title: "Conteúdo", items: ["transmissions", "archives", "categories"] },
   { title: "Publicação", items: ["youtube", "pipeline", "hero", "timeline"] },
+  { title: "Inteligência", items: ["graph"] },
   { title: "Dados", items: ["database", "diagnostics"] },
   { title: "Sistema", items: ["settings", "json"] },
 ];
@@ -566,6 +568,149 @@ function statusType(status?: string) {
   return "private";
 }
 
+
+
+type KnowledgeNode = { id: string; label: string; type: string; count: number };
+type KnowledgeEdge = { from: string; to: string; relation: string; source?: string };
+
+const STOP_WORDS = new Set(["para", "com", "dos", "das", "mais", "menos", "sobre", "uma", "um", "que", "por", "the", "and", "of", "de", "do", "da", "e", "o", "a"]);
+
+function entityKey(type: string, value: string) {
+  return `${type}:${slugify(value || "indefinido")}`;
+}
+
+function addKnowledgeNode(nodes: Map<string, KnowledgeNode>, type: string, labelValue: string) {
+  const label = String(labelValue || "Indefinido").trim();
+  const id = entityKey(type, label);
+  const current = nodes.get(id);
+  if (current) current.count += 1;
+  else nodes.set(id, { id, label, type, count: 1 });
+  return id;
+}
+
+function addKnowledgeEdge(edges: KnowledgeEdge[], from: string, to: string, relation: string, source?: string) {
+  if (!from || !to || from === to) return;
+  const key = `${from}|${to}|${relation}|${source ?? ""}`;
+  if (!edges.some((edge) => `${edge.from}|${edge.to}|${edge.relation}|${edge.source ?? ""}` === key)) edges.push({ from, to, relation, source });
+}
+
+function extractTitleEntities(title: string) {
+  return String(title || "")
+    .split(/[^A-Za-zÀ-ÿ0-9]+/)
+    .map((word) => word.trim())
+    .filter((word) => word.length >= 4 && !STOP_WORDS.has(word.toLowerCase()))
+    .slice(0, 5);
+}
+
+function buildKnowledgeGraph(content: any) {
+  const nodes = new Map<string, KnowledgeNode>();
+  const edges: KnowledgeEdge[] = [];
+  const videos = content?.videos ?? [];
+  const archives = content?.archives ?? [];
+
+  for (const video of videos) {
+    const videoId = addKnowledgeNode(nodes, video.contentType === "relato" ? "relato" : "video", video.title || video.slug || video.code);
+    const categoryId = addKnowledgeNode(nodes, "categoria", video.category || "Sem categoria");
+    addKnowledgeEdge(edges, videoId, categoryId, "classificado como", video.slug);
+
+    for (const tag of video.tags ?? []) {
+      const tagId = addKnowledgeNode(nodes, "tag", tag);
+      addKnowledgeEdge(edges, videoId, tagId, "marcado com", video.slug);
+    }
+
+    for (const word of extractTitleEntities(video.title)) {
+      const entityId = addKnowledgeNode(nodes, "entidade", word);
+      addKnowledgeEdge(edges, videoId, entityId, "menciona", video.slug);
+    }
+
+    for (const archiveSlug of video.relatedArchives ?? []) {
+      const archive = archives.find((item: any) => item.slug === archiveSlug);
+      const archiveId = addKnowledgeNode(nodes, "arquivo", archive?.title || archiveSlug);
+      addKnowledgeEdge(edges, videoId, archiveId, "possui dossiê", video.slug);
+    }
+  }
+
+  for (const archive of archives) {
+    const archiveId = addKnowledgeNode(nodes, "arquivo", archive.title || archive.slug || archive.code);
+    const categoryId = addKnowledgeNode(nodes, "categoria", archive.category || "Sem categoria");
+    addKnowledgeEdge(edges, archiveId, categoryId, "classificado como", archive.slug);
+
+    if (archive.relatedTransmissionSlug) {
+      const video = videos.find((item: any) => item.slug === archive.relatedTransmissionSlug);
+      const videoId = addKnowledgeNode(nodes, video?.contentType === "relato" ? "relato" : "video", video?.title || archive.relatedTransmissionSlug);
+      addKnowledgeEdge(edges, archiveId, videoId, "derivado de", archive.slug);
+    }
+
+    for (const tag of archive.tags ?? []) {
+      const tagId = addKnowledgeNode(nodes, "tag", tag);
+      addKnowledgeEdge(edges, archiveId, tagId, "marcado com", archive.slug);
+    }
+  }
+
+  const topNodes = [...nodes.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  const videosWithoutArchive = videos.filter((video: any) => !(archives ?? []).some((archive: any) => archive.relatedTransmissionSlug === video.slug || archive.slug === video.slug));
+  const archivesWithoutVideo = archives.filter((archive: any) => archive.relatedTransmissionSlug && !(videos ?? []).some((video: any) => video.slug === archive.relatedTransmissionSlug));
+  const duplicateVideoIds = Object.entries(videos.reduce((acc: Record<string, number>, video: any) => {
+    if (video.videoId) acc[video.videoId] = (acc[video.videoId] ?? 0) + 1;
+    return acc;
+  }, {})).filter(([, count]) => Number(count) > 1);
+
+  return { nodes: topNodes, edges, videosWithoutArchive, archivesWithoutVideo, duplicateVideoIds };
+}
+
+function KnowledgeGraphPanel({ content, onNavigate }: { content: any; onNavigate: (section: Section) => void }) {
+  const graph = useMemo(() => buildKnowledgeGraph(content), [content]);
+  const entityCount = graph.nodes.filter((node) => node.type === "entidade").length;
+  const tagCount = graph.nodes.filter((node) => node.type === "tag").length;
+  const issueCount = graph.videosWithoutArchive.length + graph.archivesWithoutVideo.length + graph.duplicateVideoIds.length;
+
+  return <div className="dashboardGrid diagnosticsPanel">
+    <section className="terminalPanel heroStatusCard">
+      <div className="cmsEditorHead"><div><span>QE Knowledge Graph</span><h2>Mapa de Conhecimento</h2></div><button className="btn" type="button" onClick={() => onNavigate("youtube")}>Nova fonte</button></div>
+      <p>Esta fundação v7 organiza vídeos, dossiês, categorias, tags e entidades como uma rede de conhecimento. Por enquanto o grafo é inferido de forma determinística a partir do acervo já salvo.</p>
+      <div className="issueMetrics">
+        <button type="button"><b>{graph.nodes.length}</b><span>Nós</span></button>
+        <button type="button"><b>{graph.edges.length}</b><span>Relações</span></button>
+        <button type="button"><b>{entityCount}</b><span>Entidades</span></button>
+        <button type="button"><b>{issueCount}</b><span>Pendências</span></button>
+      </div>
+    </section>
+
+    <section className="terminalPanel diagnosticsHero">
+      <div><span>Saúde do grafo</span><h2>{issueCount ? "Relações a revisar" : "Grafo consistente"}</h2><p>Tags: <b>{tagCount}</b> · Vídeos sem dossiê: <b>{graph.videosWithoutArchive.length}</b> · Dossiês órfãos: <b>{graph.archivesWithoutVideo.length}</b></p></div>
+      <strong>{Math.max(0, 100 - issueCount * 10)}%</strong>
+    </section>
+
+    <section className="terminalPanel">
+      <span>Entidades principais</span>
+      <h2>Nós mais recorrentes</h2>
+      <div className="issueList">
+        {graph.nodes.slice(0, 12).map((node) => <button type="button" key={node.id}><b>{node.label}</b><span>{node.type} · {node.count} conexão(ões)</span></button>)}
+      </div>
+    </section>
+
+    <section className="terminalPanel">
+      <span>Relações recentes</span>
+      <h2>Conexões inferidas</h2>
+      <div className="issueList">
+        {graph.edges.slice(0, 12).map((edge, index) => {
+          const from = graph.nodes.find((node) => node.id === edge.from)?.label ?? edge.from;
+          const to = graph.nodes.find((node) => node.id === edge.to)?.label ?? edge.to;
+          return <button type="button" key={`${edge.from}-${edge.to}-${index}`}><b>{from} → {to}</b><span>{edge.relation}</span></button>;
+        })}
+      </div>
+    </section>
+
+    <section className="terminalPanel editorialIssues">
+      <div className="cmsEditorHead"><div><span>Integridade</span><h2>Pendências do grafo</h2></div></div>
+      {!issueCount ? <div className="allClear"><b>Nenhuma pendência crítica detectada.</b><p>Todos os vídeos principais possuem dossiês relacionados e não há duplicidade de vídeo do YouTube.</p></div> : <div className="issueList">
+        {graph.videosWithoutArchive.slice(0, 6).map((video: any) => <button type="button" key={`v-${video.slug}`} onClick={() => onNavigate("archives")}><b>{video.title}</b><span>Vídeo sem dossiê relacionado</span></button>)}
+        {graph.archivesWithoutVideo.slice(0, 6).map((archive: any) => <button type="button" key={`a-${archive.slug}`} onClick={() => onNavigate("archives")}><b>{archive.title}</b><span>Dossiê aponta para vídeo inexistente</span></button>)}
+        {graph.duplicateVideoIds.map(([videoId]) => <button type="button" key={`d-${videoId}`} onClick={() => onNavigate("transmissions")}><b>{String(videoId)}</b><span>YouTube videoId duplicado</span></button>)}
+      </div>}
+    </section>
+  </div>;
+}
 function AdminDashboard({ content, stats, backups, onNavigate }: { content: any; stats: any; backups: BackupRecord[]; onNavigate: (section: Section) => void }) {
   const items = allEditorialItems(content);
   const privateItems = items.filter((item) => statusType(item.status) === "private");
@@ -1146,10 +1291,11 @@ export default function AdminPage() {
   {active === "pipeline" && <ContentPipelinePanel content={content} onApply={(nextContent, message) => { setContent(nextContent); setStatus(message); }} />}
   {active === "categories" && <CollectionManager title="Categorias" type="category" items={content.categories ?? []} content={content} uploadImage={uploadImage} groups={categoryGroups} onAdd={() => addItem("categories", emptyCategory(content.categories?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("categories", i, v)} onRemove={(i: number) => removeItem("categories", i)} />}
   {active === "database" && <DatabasePanel />}
+  {active === "graph" && <KnowledgeGraphPanel content={content} onNavigate={setActive} />}
   {active === "diagnostics" && <DiagnosticsPanel />}
   {active === "timeline" && <CollectionManager title="Timeline" type="archive" items={content.timeline ?? []} content={content} uploadImage={uploadImage} groups={timelineGroups} onAdd={() => addItem("timeline", { year: "2026", title: "Novo evento", text: "Descrição do evento." })} onUpdate={(i: number, v: any) => updateArray("timeline", i, v)} onRemove={(i: number) => removeItem("timeline", i)} />}
   {active === "hero" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Publicação</span><h2>Hero principal</h2></div></div><div className="cmsEditorGrid"><div>{["eyebrow", "title", "subtitle", "description", "image", "primaryActionLabel", "secondaryActionLabel", "featuredArchiveSlug", "featuredTransmissionSlug", "featuredTransmissionYoutubeUrl"].map((f) => f === "image" ? <UploadField key={f} label={label(f)} value={content.hero?.[f] ?? ""} onChange={(v) => update(`hero.${f}`, v)} onUpload={uploadImage} /> : <TextField key={f} label={label(f)} value={content.hero?.[f] ?? ""} textarea={f === "description"} onChange={(v) => update(`hero.${f}`, v)} />)}<div className="cmsField"><span>Carrossel do Hero</span><p className="cmsHint">Marque “Exibir no Hero” nas transmissões para controlar o carrossel.</p></div></div><PreviewCard item={{ title: content.hero?.title, description: content.hero?.description, image: content.hero?.image, category: "Hero", status: "Ativo" }} type="Hero" /></div></div>}
   {active === "settings" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Sistema</span><h2>Configurações do site</h2></div></div><div className="cmsEditorGrid single"><div><TextField label="Título do site" value={content.site?.title} onChange={(v) => update("site.title", v)} /><TextField label="Tagline" value={content.site?.tagline} onChange={(v) => update("site.tagline", v)} /><TextField label="Descrição" value={content.site?.description} textarea onChange={(v) => update("site.description", v)} /><TextField label="E-mail de relatos" value={content.site?.emailRelatos} onChange={(v) => update("site.emailRelatos", v)} /><TextField label="URL YouTube" value={content.site?.youtubeUrl} onChange={(v) => update("site.youtubeUrl", v)} /><TextField label="URL Instagram" value={content.site?.instagramUrl} onChange={(v) => update("site.instagramUrl", v)} /></div></div></div>}
   {active === "json" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Modo desenvolvedor</span><h2>JSON completo</h2></div></div><p className="cmsHint devHint">Use apenas para conferência avançada, exportação ou correções pontuais. O Supabase agora é a fonte oficial do acervo; este JSON é somente exportação/fallback.</p><textarea className="jsonEditor" value={JSON.stringify(content, null, 2)} onChange={(e) => { try { setContent(JSON.parse(e.target.value)); } catch { setStatus("JSON inválido."); } }} /></div>}
-  </section></section><footer className="cmsVersionFooter">QE Content Studio · v6.4.0 · Supabase Source of Truth · Schema 004</footer></main>;
+  </section></section><footer className="cmsVersionFooter">QE Content Studio · v7.0.0 · Knowledge Graph Foundation · Schema 005</footer></main>;
 }

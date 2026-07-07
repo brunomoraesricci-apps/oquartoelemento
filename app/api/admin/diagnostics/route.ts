@@ -3,8 +3,8 @@ import { createSupabaseAdminClient, createSupabasePublicClient, getSupabaseConfi
 
 export const dynamic = "force-dynamic";
 
-const VERSION = "v6.4.0";
-const SCHEMA_VERSION = "004";
+const VERSION = "v7.0.0";
+const SCHEMA_VERSION = "005";
 
 type TableCheck = {
   table: string;
@@ -20,6 +20,9 @@ const TABLES: TableCheck[] = [
   { table: "qe_timeline_events", label: "Timeline", required: true },
   { table: "qe_backups", label: "Backups", required: true },
   { table: "qe_sources", label: "Sources", required: true },
+  { table: "qe_entities", label: "Grafo: Entidades", required: false },
+  { table: "qe_content_entities", label: "Grafo: Conteúdo x Entidades", required: false },
+  { table: "qe_content_relations", label: "Grafo: Relações", required: false },
   { table: "qe_migrations", label: "Migrações", required: false },
   { table: "qe_reports", label: "Relatos legados", required: false },
 ];
@@ -108,6 +111,7 @@ export async function GET() {
   for (const table of requiredFailed) recommendations.push(`Tabela obrigatória indisponível: ${table.table}.`);
   if ((counts.qe_backups ?? 0) === 0 && checks.find((item) => item.table === "qe_backups")?.ok) recommendations.push("Nenhum backup registrado ainda. Um backup será criado no próximo salvamento/reset.");
   if ((counts.qe_sources ?? 0) === 0 && checks.find((item) => item.table === "qe_sources")?.ok) recommendations.push("Nenhuma source cadastrada ainda. Use Nova Publicação por URL para popular qe_sources.");
+  if (!checks.find((item) => item.table === "qe_entities")?.ok) recommendations.push("Execute docs/SUPABASE_V7_0_KNOWLEDGE_GRAPH.sql para ativar as tabelas do Knowledge Graph.");
   if (!recommendations.length) recommendations.push("Nenhuma pendência crítica detectada.");
 
   return NextResponse.json({
