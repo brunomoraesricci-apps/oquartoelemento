@@ -37,3 +37,8 @@ Supabase passa a ser a fonte oficial do acervo. JSON permanece apenas como fallb
 - Modo padrão: limpa transmissões, arquivos, relatos e timeline.
 - Modo completo: também limpa categorias.
 - Preparação para repopular a base usando URL do YouTube + QE Package.
+
+
+## v5.6 YouTube Intake
+
+Adiciona a tela **Nova Publicação**, que gera um QE Package inicial a partir de uma URL do YouTube sem usar API paga.

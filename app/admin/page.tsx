@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-type Section = "dashboard" | "transmissions" | "archives" | "reports" | "categories" | "pipeline" | "hero" | "timeline" | "database" | "settings" | "json";
+type Section = "dashboard" | "transmissions" | "archives" | "reports" | "categories" | "youtube" | "pipeline" | "hero" | "timeline" | "database" | "settings" | "json";
 
 type FieldGroup = {
   title: string;
@@ -17,6 +17,7 @@ const labels: Record<Section, string> = {
   archives: "Arquivos",
   reports: "Relatos",
   categories: "Categorias",
+  youtube: "Nova Publicação",
   pipeline: "Central de Publicação",
   hero: "Hero",
   timeline: "Timeline",
@@ -28,7 +29,7 @@ const labels: Record<Section, string> = {
 const sidebarGroups: { title: string; items: Section[] }[] = [
   { title: "Central", items: ["dashboard"] },
   { title: "Conteúdo", items: ["transmissions", "archives", "reports", "categories"] },
-  { title: "Publicação", items: ["pipeline", "hero", "timeline"] },
+  { title: "Publicação", items: ["youtube", "pipeline", "hero", "timeline"] },
   { title: "Dados", items: ["database"] },
   { title: "Sistema", items: ["settings", "json"] },
 ];
@@ -184,6 +185,31 @@ function asArray(value: any): string[] {
   if (Array.isArray(value)) return value.map(String).filter(Boolean);
   if (!value) return [];
   return String(value).split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function extractYouTubeId(url: string) {
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  const patterns = [
+    /youtu\.be\/([A-Za-z0-9_-]{6,})/,
+    /youtube\.com\/watch\?v=([A-Za-z0-9_-]{6,})/,
+    /youtube\.com\/embed\/([A-Za-z0-9_-]{6,})/,
+    /youtube\.com\/shorts\/([A-Za-z0-9_-]{6,})/,
+  ];
+  for (const pattern of patterns) {
+    const match = trimmed.match(pattern);
+    if (match?.[1]) return match[1].split(/[?&]/)[0];
+  }
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.searchParams.get("v") ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function youtubeThumb(videoId: string) {
+  return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : "";
 }
 
 function upsertBySlug(list: any[], item: any) {
@@ -575,9 +601,129 @@ function AdminDashboard({ content, stats, backups, onNavigate }: { content: any;
     </div>
 
     <section className="terminalPanel editorialIssues">
-      <div className="cmsEditorHead"><div><span>Checklist operacional</span><h2>Pontos antes do deploy</h2></div><button className="btn" type="button" onClick={() => onNavigate("pipeline")}>Nova publicação</button></div>
+      <div className="cmsEditorHead"><div><span>Checklist operacional</span><h2>Pontos antes do deploy</h2></div><button className="btn" type="button" onClick={() => onNavigate("youtube")}>Nova publicação</button></div>
       {criticalIssues.length ? <div className="issueList">{criticalIssues.map((issue, index) => <button type="button" key={`${issue.label}-${index}`} onClick={() => onNavigate(issue.section)}><b>{issue.detail}</b><span>{issue.label}</span></button>)}</div> : <div className="allClear"><b>Acervo sem pendências críticas.</b><p>SEO, imagens e categorias principais estão em bom estado para o próximo deploy.</p></div>}
     </section>
+  </div>;
+}
+
+
+function YouTubeIntakePanel({ content, onApply }: { content: any; onApply: (nextContent: any, message: string) => void }) {
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState(CATEGORY_OPTIONS[0]);
+  const [year, setYear] = useState("2026");
+  const [status, setStatus] = useState("Rascunho");
+  const [description, setDescription] = useState("Abrir transmissão no arquivo.");
+  const [createArchive, setCreateArchive] = useState(true);
+  const [showInHero, setShowInHero] = useState(false);
+  const [packageText, setPackageText] = useState("");
+  const [localStatus, setLocalStatus] = useState("");
+
+  const videoId = extractYouTubeId(youtubeUrl);
+  const safeTitle = title.trim() || (videoId ? `Nova transmissão ${videoId}` : "Nova transmissão");
+  const slug = slugify(safeTitle);
+  const thumbnail = youtubeThumb(videoId);
+
+  function buildPackage() {
+    if (!videoId) {
+      setLocalStatus("❌ URL do YouTube inválida ou sem video id.");
+      return;
+    }
+    const nextCode = `QE-V-${String((content.videos?.length ?? 0) + 1).padStart(3, "0")}`;
+    const archiveCode = `QE-${String((content.archives?.length ?? 0) + 1).padStart(3, "0")}`;
+    const archiveSlug = createArchive ? `${slug}-arquivo` : "";
+    const pkg = `QE_PACKAGE_VERSION: 1.0
+
+TRANSMISSION
+CODE: ${nextCode}
+TITLE: ${safeTitle}
+SLUG: ${slug}
+CATEGORY: ${category}
+YEAR: ${year}
+STATUS: ${status}
+YOUTUBE: ${youtubeUrl.trim()}
+IMAGE: ${thumbnail}
+HERO: ${showInHero ? "true" : "false"}
+DESCRIPTION:
+${description.trim() || "Abrir transmissão no arquivo."}
+TAGS:
+- ${category.toLowerCase()}
+- quarto elemento
+SEO_TITLE: ${safeTitle} | O Quarto Elemento
+SEO_DESCRIPTION: ${description.trim() || `Arquivo investigativo sobre ${safeTitle}.`}
+RELATED_ARCHIVES:${archiveSlug ? `\n- ${archiveSlug}` : ""}
+AI_NOTES:
+Pacote inicial gerado a partir da URL do YouTube. Revisar título, descrição, tags, SEO e relacionamentos antes da publicação.
+END_TRANSMISSION${createArchive ? `
+
+ARCHIVE
+CODE: ${archiveCode}
+TITLE: ${safeTitle}
+SLUG: ${archiveSlug}
+CATEGORY: ${category}
+YEAR: ${year}
+STATUS: Rascunho
+CLASSIFICATION: Em investigação
+LOCATION: Brasil
+IMAGE: ${thumbnail}
+SUMMARY:
+Dossiê inicial criado a partir da transmissão ${safeTitle}.
+DESCRIPTION:
+Arquivo investigativo vinculado à transmissão ${safeTitle}.
+LONG_DESCRIPTION:
+Este dossiê foi criado automaticamente como ponto de partida editorial. Complete o texto com o contexto investigativo, evidências, linha do tempo e conexões do caso.
+RELATED_TRANSMISSION_SLUG: ${slug}
+TAGS:
+- ${category.toLowerCase()}
+- dossiê
+SEO_TITLE: ${safeTitle} | Dossiê | O Quarto Elemento
+SEO_DESCRIPTION: Dossiê investigativo relacionado à transmissão ${safeTitle}.
+AI_NOTES:
+Arquivo inicial gerado pelo YouTube Intake. Revisar conteúdo antes de publicar.
+END_ARCHIVE` : ""}`;
+    setPackageText(pkg);
+    setLocalStatus("✅ Pacote inicial gerado. Revise antes de aplicar.");
+  }
+
+  function applyGenerated() {
+    const parsed = parseQePackage(packageText);
+    if (parsed.errors.length) {
+      setLocalStatus(`❌ Pacote inválido: ${parsed.errors.join(" ")}`);
+      return;
+    }
+    const result = applyQePackage(content, parsed);
+    onApply(result.content, `Pacote gerado por URL aplicado localmente: ${parsed.blocks.length} bloco(s). Revise e clique em Salvar alterações para publicar no Supabase.`);
+    setLocalStatus("✅ Pacote aplicado localmente. Falta salvar no Supabase.");
+  }
+
+  return <div className="pipelineGrid">
+    <section className="terminalPanel packageImporter">
+      <div className="cmsEditorHead"><div><span>QE YouTube Intake</span><h2>Nova publicação por URL</h2></div></div>
+      <p className="cmsHint">Cole a URL do YouTube para gerar um QE Package inicial. Nesta fase, o sistema extrai o ID do vídeo e a thumbnail pública; título, SEO e dossiê devem ser revisados antes de salvar.</p>
+      <div className="cmsEditorGrid single">
+        <div>
+          <TextField label="URL do YouTube" value={youtubeUrl} onChange={setYoutubeUrl} />
+          <TextField label="Título editorial" value={title} onChange={setTitle} />
+          <div className="cmsField"><span>Categoria</span><select value={category} onChange={(e) => setCategory(e.target.value)}>{CATEGORY_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
+          <div className="cmsField"><span>Status inicial</span><select value={status} onChange={(e) => setStatus(e.target.value)}>{["Rascunho", "Em análise", "Publicado", "Oculto"].map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
+          <TextField label="Ano" value={year} onChange={setYear} />
+          <TextField label="Descrição curta" value={description} textarea onChange={setDescription} />
+          <label className="cmsField resetCheckbox"><span>Gerar dossiê</span><label><input type="checkbox" checked={createArchive} onChange={(e) => setCreateArchive(e.target.checked)} /> Criar arquivo/dossiê inicial relacionado</label></label>
+          <label className="cmsField resetCheckbox"><span>Hero</span><label><input type="checkbox" checked={showInHero} onChange={(e) => setShowInHero(e.target.checked)} /> Sugerir transmissão no carrossel principal</label></label>
+        </div>
+      </div>
+      <div className="packageActions"><button className="btn btnRed" type="button" onClick={buildPackage}>Gerar pacote</button><button className="btn" type="button" onClick={applyGenerated} disabled={!packageText.trim()}>Aplicar localmente</button></div>
+      {localStatus && <div className={localStatus.startsWith("❌") ? "packageErrors" : "packageApplied"}><p>{localStatus}</p></div>}
+      <textarea className="packageEditor" value={packageText} placeholder="O QE Package gerado aparecerá aqui..." onChange={(e) => setPackageText(e.target.value)} />
+    </section>
+    <aside className="terminalPanel packagePreview">
+      <span>Preview do vídeo</span>
+      <h3>{safeTitle}</h3>
+      <div className="packageCounts"><p>Video ID: <b>{videoId || "—"}</b></p><p>Slug: <b>{slug}</b></p><p>Thumbnail: <b>{thumbnail ? "detectada" : "pendente"}</b></p><p>Destino: <b>QE Package</b></p></div>
+      {thumbnail && <PreviewCard item={{ title: safeTitle, description, image: thumbnail, category, status }} type="YouTube" />}
+      <div className="packageErrors"><b>Atenção</b><p>Esta versão não consulta a API oficial do YouTube. Ela usa apenas a URL para montar o pacote inicial sem custo adicional.</p></div>
+    </aside>
   </div>;
 }
 
@@ -787,10 +933,11 @@ export default function AdminPage() {
   }
   function downloadJson() { const blob = new Blob([JSON.stringify(content, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "content.json"; a.click(); URL.revokeObjectURL(url); }
   async function logout() { await fetch("/api/admin/logout", { method: "POST" }); window.location.href = "/admin/login"; }
-  return <main className="adminPage cmsPage"><header className="cmsTop"><div><span>QE Archive System</span><h1>Content Studio</h1><p>Gerencie o acervo sem editar código. A complexidade técnica fica recolhida; o foco fica no conteúdo.</p></div><div className="cmsTopActions"><button className="btn btnRed" onClick={saveContent} disabled={isSaving}>{isSaving ? "Salvando..." : "Salvar alterações"}</button><button className="btn" onClick={downloadJson}>Baixar JSON</button><button className="btn" onClick={() => setActive("pipeline")}>Importar pacote</button><a className="btn" href="/">Ver site</a><button className="btn danger" onClick={logout}>Logout</button></div></header>{status && <div className={status.startsWith("❌") ? "adminStatus adminStatusError" : "adminStatus"}>{status}</div>}{saveDebug && !saveDebug.ok && <details className="terminalPanel saveDebug"><summary>Detalhes técnicos do último save</summary><pre>{JSON.stringify(saveDebug, null, 2)}</pre></details>}<section className="cmsShell"><aside className="cmsSidebar terminalPanel">{sidebarGroups.map((group) => <div className="cmsNavGroup" key={group.title}><span>{group.title}</span>{group.items.map((s) => <button className={active === s ? "active" : ""} key={s} onClick={() => setActive(s)}>{labels[s]}</button>)}</div>)}</aside><section className="cmsContent">{active === "dashboard" && stats && <AdminDashboard content={content} stats={stats} backups={backups} onNavigate={setActive} />}
+  return <main className="adminPage cmsPage"><header className="cmsTop"><div><span>QE Archive System</span><h1>Content Studio</h1><p>Gerencie o acervo sem editar código. A complexidade técnica fica recolhida; o foco fica no conteúdo.</p></div><div className="cmsTopActions"><button className="btn btnRed" onClick={saveContent} disabled={isSaving}>{isSaving ? "Salvando..." : "Salvar alterações"}</button><button className="btn" onClick={downloadJson}>Baixar JSON</button><button className="btn" onClick={() => setActive("youtube")}>Nova publicação</button><button className="btn" onClick={() => setActive("pipeline")}>Importar pacote</button><a className="btn" href="/">Ver site</a><button className="btn danger" onClick={logout}>Logout</button></div></header>{status && <div className={status.startsWith("❌") ? "adminStatus adminStatusError" : "adminStatus"}>{status}</div>}{saveDebug && !saveDebug.ok && <details className="terminalPanel saveDebug"><summary>Detalhes técnicos do último save</summary><pre>{JSON.stringify(saveDebug, null, 2)}</pre></details>}<section className="cmsShell"><aside className="cmsSidebar terminalPanel">{sidebarGroups.map((group) => <div className="cmsNavGroup" key={group.title}><span>{group.title}</span>{group.items.map((s) => <button className={active === s ? "active" : ""} key={s} onClick={() => setActive(s)}>{labels[s]}</button>)}</div>)}</aside><section className="cmsContent">{active === "dashboard" && stats && <AdminDashboard content={content} stats={stats} backups={backups} onNavigate={setActive} />}
     {active === "transmissions" && <CollectionManager title="Transmissões" type="transmission" items={content.videos ?? []} content={content} uploadImage={uploadImage} groups={transmissionGroups} onAdd={() => addItem("videos", emptyTransmission(content.videos?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("videos", i, v)} onRemove={(i: number) => removeItem("videos", i)} />}
   {active === "archives" && <CollectionManager title="Arquivos" type="archive" items={content.archives ?? []} content={content} uploadImage={uploadImage} groups={archiveGroups} onAdd={() => addItem("archives", emptyArchive(content.archives?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("archives", i, v)} onRemove={(i: number) => removeItem("archives", i)} />}
   {active === "reports" && <CollectionManager title="Relatos" type="report" items={content.relatos ?? []} content={content} uploadImage={uploadImage} groups={reportGroups} onAdd={() => addItem("relatos", emptyReport(content.relatos?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("relatos", i, v)} onRemove={(i: number) => removeItem("relatos", i)} />}
+  {active === "youtube" && <YouTubeIntakePanel content={content} onApply={(nextContent, message) => { setContent(nextContent); setStatus(message); }} />}
   {active === "pipeline" && <ContentPipelinePanel content={content} onApply={(nextContent, message) => { setContent(nextContent); setStatus(message); }} />}
   {active === "categories" && <CollectionManager title="Categorias" type="category" items={content.categories ?? []} content={content} uploadImage={uploadImage} groups={categoryGroups} onAdd={() => addItem("categories", emptyCategory(content.categories?.length ?? 0))} onUpdate={(i: number, v: any) => updateArray("categories", i, v)} onRemove={(i: number) => removeItem("categories", i)} />}
   {active === "database" && <DatabasePanel />}
