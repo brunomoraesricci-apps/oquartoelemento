@@ -1,4 +1,5 @@
 import { getContent } from "@/lib/content";
+import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
 import { Navbar } from "@/components/Navbar";
@@ -12,6 +13,12 @@ import { RelatosInbox } from "@/components/RelatosInbox";
 import { Timeline } from "@/components/Timeline";
 import { Footer } from "@/components/Footer";
 import { ReportModal } from "@/components/ReportModal";
+
+export const metadata = buildMetadata({
+  title: "O Quarto Elemento | Arquivos Investigativos",
+  description: "Acesse transmissões, dossiês e relatos classificados sobre mistérios brasileiros, OVNIs, lendas, desaparecimentos e casos inexplicáveis.",
+  path: "/",
+});
 
 export const dynamic = "force-dynamic";
 

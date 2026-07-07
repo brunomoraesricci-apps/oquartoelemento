@@ -1,14 +1,51 @@
 import type { MetadataRoute } from "next";
+import { getContent } from "@/lib/content";
+import { SITE_URL } from "@/lib/seo";
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://oquartoelemento.com.br";
+  const content = getContent();
+  const now = new Date();
 
-  const routes = ["", "/transmissoes", "/arquivos", "/relatos", "/linha-do-tempo", "/contato", "/explorar", "/transmissoes/top-10-desaparecimentos-mais-misteriosos"];
+  const staticRoutes = [
+    { path: "", priority: 1 },
+    { path: "/transmissoes", priority: 0.9 },
+    { path: "/arquivos", priority: 0.9 },
+    { path: "/explorar", priority: 0.85 },
+    { path: "/relatos", priority: 0.8 },
+    { path: "/linha-do-tempo", priority: 0.8 },
+    { path: "/contato", priority: 0.6 },
+  ];
 
-  return routes.map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
+  const transmissions = [content.featuredTransmission, ...(content.videos ?? [])]
+    .filter(Boolean)
+    .map((item: any) => ({
+      path: `/transmissoes/${item.slug ?? slugify(item.title ?? item.code ?? "transmissao")}`,
+      priority: 0.75,
+    }));
+
+  const archives = (content.archives ?? []).map((item: any) => ({
+    path: `/arquivos/${item.slug ?? slugify(item.title ?? item.code ?? "arquivo")}`,
+    priority: 0.75,
+  }));
+
+  const categories = (content.categories ?? []).map((item: any) => ({
+    path: `/categorias/${item.slug ?? slugify(item.title ?? "categoria")}`,
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...transmissions, ...archives, ...categories].map((route) => ({
+    url: `${SITE_URL}${route.path}`,
+    lastModified: now,
     changeFrequency: "weekly",
-    priority: route === "" ? 1 : 0.8,
+    priority: route.priority,
   }));
 }

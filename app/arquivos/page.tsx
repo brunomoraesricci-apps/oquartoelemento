@@ -1,10 +1,18 @@
 import { getContent } from "@/lib/content";
+import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageHeader } from "@/components/pages/PageHeader";
 import { ArchiveSearchPanel } from "@/components/pages/ArchiveSearchPanel";
+
+export const metadata = buildMetadata({
+  title: "Arquivos | Dossiês Desclassificados",
+  description: "Explore dossiês, casos, evidências e arquivos catalogados no sistema investigativo do Quarto Elemento.",
+  path: "/arquivos",
+  keywords: ["dossiês", "arquivos classificados", "casos investigativos"],
+});
 
 export const dynamic = "force-dynamic";
 

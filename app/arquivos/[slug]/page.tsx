@@ -1,4 +1,5 @@
 import { getContent } from "@/lib/content";
+import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
 import { Navbar } from "@/components/Navbar";
@@ -29,6 +30,33 @@ export async function generateStaticParams() {
   return (content.archives ?? []).map((archive: any) => ({
     slug: getArchiveSlug(archive),
   }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const content = getContent();
+  const archive = (content.archives ?? []).find((item: any) =>
+    getArchiveSlug(item) === slug ||
+    item.code === slug ||
+    localSlugify(item.code || "") === slug
+  );
+
+  if (!archive) {
+    return buildMetadata({
+      title: "Arquivo não encontrado",
+      description: "O dossiê solicitado não foi localizado no Arquivo Digital do Quarto Elemento.",
+      path: `/arquivos/${slug}`,
+      noIndex: true,
+    });
+  }
+
+  return buildMetadata({
+    title: `${archive.title} | Dossiê Desclassificado`,
+    description: archive.summary ?? archive.description ?? "Dossiê investigativo catalogado no Arquivo Digital do Quarto Elemento.",
+    path: `/arquivos/${slug}`,
+    image: archive.image ?? "/images/banner-wide.png",
+    keywords: [archive.code, archive.category, archive.location, archive.year, archive.classification, ...(archive.tags ?? [])].filter(Boolean),
+  });
 }
 
 export default async function ArquivoDetailPage({ params }: { params: Promise<{ slug: string }> }) {

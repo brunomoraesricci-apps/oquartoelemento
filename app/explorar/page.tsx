@@ -1,10 +1,18 @@
 import { getContent } from "@/lib/content";
+import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageHeader } from "@/components/pages/PageHeader";
 import { IntelligenceCenter } from "@/components/IntelligenceCenter";
+
+export const metadata = buildMetadata({
+  title: "Explorar | Centro de Inteligência",
+  description: "Pesquise, filtre e navegue por transmissões, categorias, relatos, dossiês e conexões do Quarto Elemento.",
+  path: "/explorar",
+  keywords: ["centro de inteligência", "busca", "acervo"],
+});
 
 export const dynamic = "force-dynamic";
 

@@ -1,9 +1,17 @@
 import { getContent } from "@/lib/content";
+import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageHeader } from "@/components/pages/PageHeader";
+
+export const metadata = buildMetadata({
+  title: "Linha do Tempo | Arquivos Cronológicos",
+  description: "Eventos, casos e registros organizados cronologicamente no Arquivo Digital do Quarto Elemento.",
+  path: "/linha-do-tempo",
+  keywords: ["linha do tempo", "cronologia", "mistérios"],
+});
 
 export const dynamic = "force-dynamic";
 

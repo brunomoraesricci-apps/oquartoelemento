@@ -1,23 +1,46 @@
-# O Quarto Elemento — v3.1 Suspense Fix
+# O Quarto Elemento — Site Oficial
 
-Correção do erro de build/rota em `/transmissoes`.
+Site oficial do canal **O Quarto Elemento**, desenvolvido como um arquivo investigativo digital inspirado em sistemas de inteligência, dossiês classificados e interfaces de documentos confidenciais.
 
-## Erro corrigido
+## Stack
 
-```text
-useSearchParams() should be wrapped in a suspense boundary at page "/transmissoes"
-```
+- Next.js
+- React
+- TypeScript
+- Tailwind/CSS customizado
+- Vercel
+- Cloudflare DNS
 
-## O que foi ajustado
+## Produção
 
-- A página `/transmissoes` agora usa um wrapper com `<Suspense>`.
-- O componente que usa `useSearchParams()` foi movido para `TransmissoesContent`.
-- O fallback mantém o visual de loading do Quarto Elemento.
+- Domínio: `https://oquartoelemento.com.br`
+- Deploy: GitHub → Vercel
 
-## Testar
+## Scripts
 
 ```bash
 npm install
-npm run build
 npm run dev
+npm run build
+npm start
 ```
+
+## Sprint 1 — Produção
+
+Inclui melhorias de SEO e identidade:
+
+- Metadata global
+- OpenGraph / Twitter Card
+- Favicon e ícones PWA
+- robots.txt
+- sitemap.xml dinâmico
+- Admin com noindex
+
+## Próximas fases
+
+- Supabase Storage
+- Banco Supabase
+- Login Admin
+- Analytics
+- Search Console
+- CMS inteligente com IA

@@ -1,4 +1,5 @@
 import { getContent } from "@/lib/content";
+import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
 import { Navbar } from "@/components/Navbar";
@@ -21,6 +22,29 @@ export async function generateStaticParams() {
   return (content.categories ?? []).map((category: any) => ({
     slug: category.slug ?? localSlugify(category.title),
   }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const content = getContent();
+  const category = (content.categories ?? []).find((item: any) => (item.slug ?? localSlugify(item.title)) === slug);
+
+  if (!category) {
+    return buildMetadata({
+      title: "Categoria não encontrada",
+      description: "A categoria solicitada não foi localizada no sistema do Quarto Elemento.",
+      path: `/categorias/${slug}`,
+      noIndex: true,
+    });
+  }
+
+  return buildMetadata({
+    title: `${category.title} | Categoria Investigativa`,
+    description: category.description ?? `Transmissões e arquivos catalogados em ${category.title}.`,
+    path: `/categorias/${slug}`,
+    image: category.image ?? "/images/banner-wide.png",
+    keywords: [category.title, "categoria", "arquivo investigativo"],
+  });
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {

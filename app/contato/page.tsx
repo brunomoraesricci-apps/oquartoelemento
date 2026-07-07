@@ -1,9 +1,16 @@
 import { getContent } from "@/lib/content";
+import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageHeader } from "@/components/pages/PageHeader";
+
+export const metadata = buildMetadata({
+  title: "Contato | Canal Institucional",
+  description: "Entre em contato com O Quarto Elemento para parcerias, correções, sugestões e mensagens institucionais.",
+  path: "/contato",
+});
 
 export const dynamic = "force-dynamic";
 

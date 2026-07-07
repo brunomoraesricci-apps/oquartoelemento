@@ -1,4 +1,5 @@
 import { getContent } from "@/lib/content";
+import { buildMetadata } from "@/lib/seo";
 import { BootScreen } from "@/components/effects/BootScreen";
 import { SideRail } from "@/components/SideRail";
 import { Navbar } from "@/components/Navbar";
@@ -57,6 +58,31 @@ export async function generateStaticParams() {
   return transmissions.map((item: any) => ({
     slug: getTransmissionSlug(item),
   }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const content = getContent();
+  const transmission = [content.featuredTransmission, ...(content.videos ?? [])].find((item: any) =>
+    getTransmissionSlug(item) === slug
+  );
+
+  if (!transmission) {
+    return buildMetadata({
+      title: "Transmissão não encontrada",
+      description: "O arquivo audiovisual solicitado não foi localizado no sistema do Quarto Elemento.",
+      path: `/transmissoes/${slug}`,
+      noIndex: true,
+    });
+  }
+
+  return buildMetadata({
+    title: `${transmission.title} | Transmissão Classificada`,
+    description: transmission.description ?? "Transmissão catalogada no arquivo audiovisual do Quarto Elemento.",
+    path: `/transmissoes/${slug}`,
+    image: transmission.image ?? "/images/banner-wide.png",
+    keywords: [transmission.category, transmission.location, transmission.year, ...(transmission.tags ?? [])].filter(Boolean),
+  });
 }
 
 export default async function TransmissionDetailPage({ params }: { params: Promise<{ slug: string }> }) {
