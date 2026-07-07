@@ -354,7 +354,7 @@ export async function readContentFromSupabase() {
   const featuredArchive = settingValue(settings, "featuredArchive", null) ?? archives[0] ?? {};
 
   const content = {
-    schemaVersion: "5.1.0",
+    schemaVersion: "5.4.0",
     site: settingValue(settings, "site", {}),
     hero: settingValue(settings, "hero", {}),
     sections: settingValue(settings, "sections", {}),
@@ -370,6 +370,7 @@ export async function readContentFromSupabase() {
     relatos,
     timeline,
     __source: "supabase",
+    __sourceOfTruth: "supabase",
     __sourceCheckedAt: new Date().toISOString(),
   };
 

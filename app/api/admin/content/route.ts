@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     const normalized = normalizeContent(body);
 
-    // v5.3: Supabase is now the primary editorial store. JSON remains read-only fallback.
+    // v5.4: Supabase is the editorial source of truth. JSON remains read-only fallback/export.
     const databaseBackup = await createSupabaseBackup(normalized, "before-supabase-first-save");
     const supabaseResults = await importContentIntoSupabase(normalized);
 
@@ -60,9 +60,9 @@ export async function POST(request: Request) {
       ok: true,
       savedAt: new Date().toISOString(),
       durationMs: Date.now() - startedAt,
-      mode: "supabase-first",
+      mode: "supabase-source-of-truth",
       primaryTarget: "supabase",
-      fallbackTarget: "json-readonly",
+      fallbackTarget: "json-emergency-fallback",
       supabaseResults,
       backup: databaseBackup,
       backupFile: databaseBackup?.ok ? databaseBackup.id : null,

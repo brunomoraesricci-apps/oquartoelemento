@@ -20,7 +20,7 @@ const labels: Record<Section, string> = {
   pipeline: "Central de Publicação",
   hero: "Hero",
   timeline: "Timeline",
-  database: "Banco de Dados",
+  database: "Fonte de Dados",
   settings: "Configurações",
   json: "Modo Dev",
 };
@@ -636,11 +636,11 @@ function DatabasePanel() {
   return <div className="dashboardGrid">
     <section className="terminalPanel editorialHeroPanel">
       <span>Supabase Foundation</span>
-      <h2>Banco de Dados Editorial</h2>
-      <p>Esta etapa prepara o Content Studio para abandonar o JSON no futuro. Por enquanto, o site continua estável lendo o JSON local, enquanto o Supabase recebe uma cópia estruturada do acervo.</p>
+      <h2>Fonte Oficial do Acervo</h2>
+      <p>O Supabase agora é a fonte oficial de leitura e escrita do Content Studio. O JSON local permanece apenas como fallback de emergência, exportação e ponto de partida para reimportações legadas.</p>
       <div className="packageActions">
         <button className="btn" type="button" onClick={checkConnection} disabled={loading}>Verificar conexão</button>
-        <button className="btn btnRed" type="button" onClick={importJson} disabled={loading}>Importar JSON para Supabase</button>
+        <button className="btn btnRed" type="button" onClick={importJson} disabled={loading}>Reimportar JSON legado</button>
       </div>
     </section>
 
@@ -655,12 +655,12 @@ function DatabasePanel() {
     </section>
 
     <section className="terminalPanel editorialIssues">
-      <div className="cmsEditorHead"><div><span>Plano de migração</span><h2>JSON → Supabase</h2></div></div>
+      <div className="cmsEditorHead"><div><span>Plano de migração</span><h2>Supabase Source of Truth</h2></div></div>
       <div className="issueList">
-        <button type="button"><b>1. Criar tabelas</b><span>Rodar docs/supabase-schema.sql no SQL Editor.</span></button>
-        <button type="button"><b>2. Configurar variáveis</b><span>.env.local e Vercel Environment Variables.</span></button>
-        <button type="button"><b>3. Importar acervo</b><span>Enviar o JSON atual para o Supabase.</span></button>
-        <button type="button"><b>4. Próxima versão</b><span>Ativar leitura híbrida e publicação direta.</span></button>
+        <button type="button"><b>1. Criar tabelas</b><span>Schema aplicado no Supabase.</span></button>
+        <button type="button"><b>2. Configurar variáveis</b><span>Variáveis configuradas em local e produção.</span></button>
+        <button type="button"><b>3. Importar acervo</b><span>Usar apenas quando precisar repopular o banco a partir do JSON legado.</span></button>
+        <button type="button"><b>4. Próxima versão</b><span>Leitura e escrita já priorizam o Supabase; JSON é fallback.</span></button>
       </div>
     </section>
 
@@ -689,7 +689,7 @@ export default function AdminPage() {
   async function uploadImage(file: File) { const fd = new FormData(); fd.append("file", file); const res = await fetch("/api/admin/upload", { method: "POST", body: fd }); const data = await res.json(); return data.url; }
   async function saveContent() {
     setIsSaving(true);
-    setStatus("Salvando alterações no Supabase...");
+    setStatus("Salvando alterações no Supabase (fonte oficial)...");
     setSaveDebug(null);
 
     const clone = structuredClone(content);
@@ -722,7 +722,7 @@ export default function AdminPage() {
         const warning = data.warning ? ` Aviso: ${data.warning}` : "";
         const duration = typeof data.durationMs === "number" ? ` em ${data.durationMs}ms` : "";
         setStatus(`✅ Conteúdo salvo em ${target}${duration} (${new Date().toLocaleTimeString()}).${warning}`);
-        setContent({ ...clone, __source: "supabase" });
+        setContent({ ...clone, __source: "supabase", __sourceOfTruth: "supabase" });
         fetch("/api/admin/backups", { cache: "no-store" })
           .then((r) => r.json())
           .then((data) => setBackups(data.backups ?? []))
@@ -755,6 +755,6 @@ export default function AdminPage() {
   {active === "timeline" && <CollectionManager title="Timeline" type="archive" items={content.timeline ?? []} content={content} uploadImage={uploadImage} groups={timelineGroups} onAdd={() => addItem("timeline", { year: "2026", title: "Novo evento", text: "Descrição do evento." })} onUpdate={(i: number, v: any) => updateArray("timeline", i, v)} onRemove={(i: number) => removeItem("timeline", i)} />}
   {active === "hero" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Publicação</span><h2>Hero principal</h2></div></div><div className="cmsEditorGrid"><div>{["eyebrow", "title", "subtitle", "description", "image", "primaryActionLabel", "secondaryActionLabel", "featuredArchiveSlug", "featuredTransmissionSlug", "featuredTransmissionYoutubeUrl"].map((f) => f === "image" ? <UploadField key={f} label={label(f)} value={content.hero?.[f] ?? ""} onChange={(v) => update(`hero.${f}`, v)} onUpload={uploadImage} /> : <TextField key={f} label={label(f)} value={content.hero?.[f] ?? ""} textarea={f === "description"} onChange={(v) => update(`hero.${f}`, v)} />)}<div className="cmsField"><span>Carrossel do Hero</span><p className="cmsHint">Marque “Exibir no Hero” nas transmissões para controlar o carrossel.</p></div></div><PreviewCard item={{ title: content.hero?.title, description: content.hero?.description, image: content.hero?.image, category: "Hero", status: "Ativo" }} type="Hero" /></div></div>}
   {active === "settings" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Sistema</span><h2>Configurações do site</h2></div></div><div className="cmsEditorGrid single"><div><TextField label="Título do site" value={content.site?.title} onChange={(v) => update("site.title", v)} /><TextField label="Tagline" value={content.site?.tagline} onChange={(v) => update("site.tagline", v)} /><TextField label="Descrição" value={content.site?.description} textarea onChange={(v) => update("site.description", v)} /><TextField label="E-mail de relatos" value={content.site?.emailRelatos} onChange={(v) => update("site.emailRelatos", v)} /><TextField label="URL YouTube" value={content.site?.youtubeUrl} onChange={(v) => update("site.youtubeUrl", v)} /><TextField label="URL Instagram" value={content.site?.instagramUrl} onChange={(v) => update("site.instagramUrl", v)} /></div></div></div>}
-  {active === "json" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Modo desenvolvedor</span><h2>JSON completo</h2></div></div><p className="cmsHint devHint">Use apenas para conferência avançada, exportação ou correções pontuais. O fluxo principal agora salva no Supabase.</p><textarea className="jsonEditor" value={JSON.stringify(content, null, 2)} onChange={(e) => { try { setContent(JSON.parse(e.target.value)); } catch { setStatus("JSON inválido."); } }} /></div>}
+  {active === "json" && <div className="cmsEditor terminalPanel"><div className="cmsEditorHead"><div><span>Modo desenvolvedor</span><h2>JSON completo</h2></div></div><p className="cmsHint devHint">Use apenas para conferência avançada, exportação ou correções pontuais. O Supabase agora é a fonte oficial do acervo; este JSON é somente exportação/fallback.</p><textarea className="jsonEditor" value={JSON.stringify(content, null, 2)} onChange={(e) => { try { setContent(JSON.parse(e.target.value)); } catch { setStatus("JSON inválido."); } }} /></div>}
   </section></section></main>;
 }
