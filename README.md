@@ -65,3 +65,11 @@ npm run dev
 ## v5.1 — Hybrid Read
 
 Leitura pública com Supabase como fonte principal e fallback automático para `data/content.json`. Consulte `docs/SUPABASE_HYBRID_READ.md`.
+
+
+## v5.2 — Hybrid Write
+
+- Content Studio agora salva no Supabase como destino principal.
+- `content.json` permanece como backup/fallback local.
+- Admin lê conteúdo via Hybrid Read para refletir o banco.
+- Consulte `docs/SUPABASE_HYBRID_WRITE.md`.
