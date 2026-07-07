@@ -673,7 +673,7 @@ function YouTubeIntelligencePanel({ content, onApply }: { content: any; onApply:
   const slug = slugify(safeTitle);
   const nextTransmissionCode = nextCode(contentType === "relato" ? "QE-R" : "QE-V", [content.featuredTransmission, ...(content.videos ?? [])].filter(Boolean));
   const nextArchiveCode = nextCode("QE", content.archives ?? []);
-  const archiveSlug = createArchive ? `${slug}-dossie` : "";
+  const archiveSlug = createArchive ? slug : "";
   const sourceId = videoId ? `youtube:${videoId}` : "";
 
   function buildPackage() {
@@ -709,7 +709,7 @@ SEO_TITLE: ${safeTitle} | O Quarto Elemento
 SEO_DESCRIPTION: ${description.trim() || `Arquivo investigativo sobre ${safeTitle}.`}
 RELATED_ARCHIVES:${archiveSlug ? `\n- ${archiveSlug}` : ""}
 AI_NOTES:
-Rascunho criado pela YouTube Intelligence Foundation v6.0. Fonte detectada automaticamente a partir da URL. Revisar título, descrição, tags, SEO e relacionamentos antes da publicação.
+Rascunho criado pela Auto Dossier Generation v6.2. Fonte detectada automaticamente a partir da URL. Revisar título, descrição, tags, SEO e relacionamentos antes da publicação.
 END_TRANSMISSION${createArchive ? `
 
 ARCHIVE
@@ -738,7 +738,7 @@ TAGS:
 SEO_TITLE: ${safeTitle} | Dossiê | O Quarto Elemento
 SEO_DESCRIPTION: Dossiê investigativo relacionado à transmissão ${safeTitle}.
 AI_NOTES:
-Arquivo inicial gerado pela YouTube Intelligence Foundation v6.0. Revisar conteúdo antes de publicar.
+Arquivo/dossiê inicial gerado automaticamente pela Auto Dossier Generation v6.2. Revisar conteúdo antes de publicar.
 END_ARCHIVE` : ""}`;
 
     setPackageText(pkg);
@@ -759,32 +759,32 @@ END_ARCHIVE` : ""}`;
   return <div className="pipelineGrid youtubeIntelligenceGrid">
     <section className="terminalPanel packageImporter">
       <div className="cmsEditorHead"><div><span>QE YouTube Intelligence</span><h2>Nova publicação por URL</h2></div></div>
-      <p className="cmsHint">Cole a URL do YouTube para gerar um rascunho editorial estruturado. Esta fundação v6.0 extrai ID, thumbnail, embed, URL canônica, código QE, slug e pacote inicial sem usar API paga.</p>
+      <p className="cmsHint">Cole a URL do YouTube para gerar um rascunho editorial estruturado. Esta fundação v6.2 cria o vídeo e também o dossiê relacionado a partir da mesma URL, evitando double-input no acervo.</p>
       <div className="cmsEditorGrid single">
         <div>
           <TextField label="URL do YouTube" value={youtubeUrl} onChange={setYoutubeUrl} />
           <TextField label="Título editorial" value={title} onChange={setTitle} />
-          <div className="cmsField"><span>Tipo de conteúdo</span><select value={contentType} onChange={(e) => { setContentType(e.target.value); if (e.target.value === "relato") { setCategory("Relatos"); setCreateArchive(false); } }}><option value="transmissao">Transmissão</option><option value="relato">Relato</option><option value="short">Short</option><option value="especial">Especial</option></select></div>
+          <div className="cmsField"><span>Tipo de conteúdo</span><select value={contentType} onChange={(e) => { setContentType(e.target.value); if (e.target.value === "relato") { setCategory("Relatos"); } }}><option value="transmissao">Transmissão</option><option value="relato">Relato</option><option value="short">Short</option><option value="especial">Especial</option></select></div>
           <div className="cmsField"><span>Categoria</span><select value={category} onChange={(e) => setCategory(e.target.value)}>{CATEGORY_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
           <div className="cmsField"><span>Status inicial</span><select value={status} onChange={(e) => setStatus(e.target.value)}>{["Rascunho", "Em análise", "Publicado", "Oculto"].map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
           <TextField label="Ano" value={year} onChange={setYear} />
           <TextField label="Descrição curta" value={description} textarea onChange={setDescription} />
-          <label className="cmsField resetCheckbox"><span>Gerar dossiê</span><label><input type="checkbox" checked={createArchive} onChange={(e) => setCreateArchive(e.target.checked)} /> Criar arquivo/dossiê inicial relacionado</label></label>
+          <label className="cmsField resetCheckbox"><span>Arquivo automático</span><label><input type="checkbox" checked={createArchive} onChange={(e) => setCreateArchive(e.target.checked)} /> Criar arquivo/dossiê automaticamente a partir desta publicação</label></label>
           <label className="cmsField resetCheckbox"><span>Hero</span><label><input type="checkbox" checked={showInHero} onChange={(e) => setShowInHero(e.target.checked)} /> Sugerir transmissão no carrossel principal</label></label>
         </div>
       </div>
-      <div className="packageActions"><button className="btn btnRed" type="button" onClick={buildPackage}>Gerar rascunho inteligente</button><button className="btn" type="button" onClick={applyGenerated} disabled={!packageText.trim()}>Aplicar localmente</button></div>
+      <div className="packageActions"><button className="btn btnRed" type="button" onClick={buildPackage}>Gerar publicação + dossiê</button><button className="btn" type="button" onClick={applyGenerated} disabled={!packageText.trim()}>Aplicar localmente</button></div>
       {localStatus && <div className={localStatus.startsWith("❌") ? "packageErrors" : "packageApplied"}><p>{localStatus}</p></div>}
-      <textarea className="packageEditor" value={packageText} placeholder="O QE Package v1.1 gerado aparecerá aqui..." onChange={(e) => setPackageText(e.target.value)} />
+      <textarea className="packageEditor" value={packageText} placeholder="O QE Package v1.2 com vídeo + dossiê aparecerá aqui..." onChange={(e) => setPackageText(e.target.value)} />
     </section>
     <aside className="terminalPanel packagePreview youtubeIntelligencePreview">
-      <span>Source Intelligence</span>
+      <span>Source + Dossier Intelligence</span>
       <h3>{safeTitle}</h3>
       <div className="packageCounts"><p>Provider: <b>{videoId ? "YouTube" : "—"}</b></p><p>Video ID: <b>{videoId || "—"}</b></p><p>Source ID: <b>{sourceId || "—"}</b></p><p>Código sugerido: <b>{nextTransmissionCode}</b></p><p>Slug: <b>{slug}</b></p><p>Embed: <b>{embedUrl ? "gerado" : "pendente"}</b></p><p>Thumbnail: <b>{thumbnail ? "detectada" : "pendente"}</b></p></div>
       {thumbnail && <PreviewCard item={{ title: safeTitle, description, image: thumbnail, category: effectiveCategory, status }} type={contentType === "relato" ? "Relato YouTube" : "YouTube"} />}
       {thumbs.length > 0 && <div className="sourceThumbList"><b>Thumbnails públicas</b>{thumbs.map((thumb) => <a key={thumb.label} href={thumb.url} target="_blank" rel="noreferrer">{thumb.label}</a>)}</div>}
       {embedUrl && <div className="embedPreview"><iframe src={embedUrl} title="YouTube preview" allowFullScreen /></div>}
-      <div className="packageErrors"><b>Limite da v6.0</b><p>Esta versão não consulta a API oficial do YouTube. Título real, descrição completa, duração e data de publicação entram na v6.1 com YouTube Data API.</p></div>
+      <div className="packageErrors"><b>Limite da v6.0</b><p>Esta versão não consulta a API oficial do YouTube. O foco da v6.2 é transformar uma única URL em vídeo + arquivo/dossiê vinculados. Metadados reais entram na próxima etapa com YouTube Data API.</p></div>
     </aside>
   </div>;
 }

@@ -1,3 +1,17 @@
+# O Quarto Elemento — v6.2 Auto Dossier Generation
+
+Nova publicação por URL agora gera vídeo + arquivo/dossiê relacionado, evitando double-input no Content Studio.
+
+## Teste
+
+```bash
+npm install
+npm run build
+npm run dev
+```
+
+Guia: `docs/AUTO_DOSSIER_GENERATION_V6_2.md`.
+
 # O Quarto Elemento — v6.0 YouTube Intelligence Foundation
 
 Site oficial e Content Studio do O Quarto Elemento.
