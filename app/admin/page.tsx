@@ -37,7 +37,7 @@ const sidebarGroups: { title: string; items: Section[] }[] = [
   { title: "Sistema", items: ["settings", "json"] },
 ];
 
-const CATEGORY_OPTIONS = ["OVNIs e Fenômenos", "Desaparecimentos", "Lendas e Mitos", "Civilizações Perdidas", "Relatos Proibidos", "Deep Web", "Relatos"];
+const CATEGORY_OPTIONS = ["OVNIs e Fenômenos", "Desaparecimentos", "Lendas e Mitos", "Civilizações Perdidas", "Relatos Proibidos", "Deep Web"];
 const STATUS_OPTIONS = ["Público", "Privado"];
 const CONTENT_TYPE_OPTIONS = ["transmissao", "relato", "short", "especial"];
 const CLASSIFICATION_OPTIONS = ["Desclassificado", "Confidencial", "Restrito", "Ultrassecreto", "Arquivo incompleto", "Em investigação"];
@@ -104,7 +104,7 @@ function emptyArchive(index: number) {
   return { code: `QE-${String(index + 1).padStart(3, "0")}`, title: "Novo arquivo", slug: "novo-arquivo", summary: "Resumo do arquivo.", description: "Descrição curta do arquivo.", longDescription: "Texto principal do dossiê.", image: "", category: "OVNIs e Fenômenos", status: "Privado", location: "Brasil", year: "2026", classification: "Confidencial", accessLevel: "LV.04", relatedTransmissionSlug: "", relatedArchives: [], relatedReportCodes: [], seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", tags: ["Arquivo"] };
 }
 function emptyReport(index: number) {
-  return { code: `RP-${String(index + 1).padStart(3, "0")}`, title: "Novo relato", subtitle: "Relato recebido", description: "Breve descrição do relato.", image: "", youtubeUrl: "", category: "Relatos", status: "Privado", location: "Brasil", year: "2026", relatedArchiveSlug: "", relatedTransmissionSlug: "", seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", tags: ["Relato"] };
+  return { code: `RP-${String(index + 1).padStart(3, "0")}`, title: "Novo relato", subtitle: "Relato recebido", description: "Breve descrição do relato.", image: "", youtubeUrl: "", category: "Relatos Proibidos", status: "Privado", location: "Brasil", year: "2026", relatedArchiveSlug: "", relatedTransmissionSlug: "", seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", tags: ["Relato"] };
 }
 function emptyCategory(index: number) {
   return { title: "Nova categoria", slug: `nova-categoria-${index + 1}`, symbol: "◇", image: "", description: "Descrição da categoria.", status: "Público", order: index + 1, seoTitle: "", seoDescription: "", ogImage: "", aiNotes: "", active: true };
@@ -825,7 +825,7 @@ function YouTubeIntelligencePanel({ content, onApply }: { content: any; onApply:
   const embedUrl = youtubeEmbed(videoId);
   const thumbnail = youtubeThumb(videoId);
   const thumbs = youtubeThumbnailSet(videoId);
-  const effectiveCategory = contentType === "relato" ? "Relatos" : category;
+  const effectiveCategory = contentType === "relato" ? "Relatos Proibidos" : category;
   const safeTitle = title.trim() || draftTitleFromVideoId(videoId);
   const slug = slugify(safeTitle);
   const nextTransmissionCode = nextCode(contentType === "relato" ? "QE-R" : "QE-V", [content.featuredTransmission, ...(content.videos ?? [])].filter(Boolean));
@@ -934,7 +934,7 @@ END_TIMELINE`;
         <div>
           <TextField label="URL do YouTube" value={youtubeUrl} onChange={setYoutubeUrl} />
           <TextField label="Título editorial" value={title} onChange={setTitle} />
-          <div className="cmsField"><span>Tipo de conteúdo</span><select value={contentType} onChange={(e) => { setContentType(e.target.value); if (e.target.value === "relato") { setCategory("Relatos"); } }}><option value="transmissao">Transmissão</option><option value="relato">Relato</option><option value="short">Short</option><option value="especial">Especial</option></select></div>
+          <div className="cmsField"><span>Tipo de conteúdo</span><select value={contentType} onChange={(e) => { setContentType(e.target.value); if (e.target.value === "relato") { setCategory("Relatos Proibidos"); } }}><option value="transmissao">Transmissão</option><option value="relato">Relato</option><option value="short">Short</option><option value="especial">Especial</option></select></div>
           <div className="cmsField"><span>Categoria</span><select value={category} onChange={(e) => setCategory(e.target.value)}>{CATEGORY_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
           <div className="cmsField"><span>Visibilidade inicial</span><select value={status} onChange={(e) => setStatus(e.target.value)}>{["Privado", "Público"].map((option) => <option key={option} value={option}>{option}</option>)}</select></div>
           <TextField label="Ano" value={year} onChange={setYear} />

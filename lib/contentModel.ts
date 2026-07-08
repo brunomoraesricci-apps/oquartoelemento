@@ -7,7 +7,6 @@ export const CATEGORY_OPTIONS = [
   "Civilizações Perdidas",
   "Relatos Proibidos",
   "Deep Web",
-  "Relatos",
 ];
 
 export const STATUS_OPTIONS = ["Público", "Privado"];
@@ -31,6 +30,12 @@ function compactArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.map(String).map((item) => item.trim()).filter(Boolean);
 }
+function normalizeCategory(value: any) {
+  const text = String(value ?? "").trim();
+  if (/^relatos?$/i.test(text) || /relatos?\s+proibidos?/i.test(text)) return "Relatos Proibidos";
+  return text;
+}
+
 function normalizeVisibilityStatus(status: any): "Público" | "Privado" {
   const normalized = String(status ?? "").trim().toLowerCase();
   if (["público", "publico", "public", "published", "publicado", "ativo", "active"].includes(normalized)) return "Público";
@@ -76,7 +81,7 @@ export function normalizeContent(content: any) {
     description: report.description ?? report.subtitle ?? "Relato catalogado no acervo.",
     image: report.image ?? "",
     youtubeUrl: report.youtubeUrl ?? "",
-    category: report.category ?? "Relatos",
+    category: normalizeCategory(report.category ?? "Relatos Proibidos"),
     status: normalizeVisibilityStatus(report.status),
     location: report.location ?? "Brasil",
     year: report.year ?? "2026",
@@ -95,6 +100,7 @@ export function normalizeContent(content: any) {
     relatedArchives: compactArray(video.relatedArchives),
     relatedReportCodes: compactArray(video.relatedReportCodes),
     status: normalizeVisibilityStatus(video.status),
+    category: normalizeCategory(video.category),
     contentType: video.contentType ?? (String(video.category ?? "").toLowerCase().includes("relato") ? "relato" : "transmissao"),
   }));
 

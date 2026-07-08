@@ -47,8 +47,18 @@ function videoSlug(video: Video) {
   return video.slug || slugify(video.title);
 }
 
+function categoryLabel(value?: string) {
+  const text = String(value || "").trim();
+  if (/^relatos?$/i.test(text) || /relatos?\s+proibidos?/i.test(text)) return "Relatos Proibidos";
+  return text || "Sem categoria";
+}
+
 function categoryKey(value?: string) {
-  return slugify(value || "sem-categoria");
+  return slugify(categoryLabel(value));
+}
+
+function isRelato(video: Video) {
+  return video.contentType === "relato" || /relato/i.test(video.category || "") || /relato/i.test(video.title || "");
 }
 
 function uniqueByCode(items: Video[]) {
@@ -64,7 +74,7 @@ function uniqueByCode(items: Video[]) {
 function buildRows(videos: Video[], archives: Archive[], activeCategory: string) {
   const visibleVideos = activeCategory === "todos"
     ? videos
-    : videos.filter((video) => categoryKey(video.category) === activeCategory);
+    : videos.filter((video) => categoryKey(video.category) === activeCategory || (activeCategory === "relatos-proibidos" && isRelato(video)));
 
   const rows: { title: string; eyebrow: string; videos: Video[] }[] = [];
 
@@ -86,7 +96,8 @@ function buildRows(videos: Video[], archives: Archive[], activeCategory: string)
   if (activeCategory === "todos") {
     const groups = new Map<string, Video[]>();
     visibleVideos.forEach((video) => {
-      const label = video.category || "Transmissões";
+      if (isRelato(video)) return;
+      const label = categoryLabel(video.category || "Transmissões");
       groups.set(label, [...(groups.get(label) || []), video]);
     });
 
@@ -100,8 +111,8 @@ function buildRows(videos: Video[], archives: Archive[], activeCategory: string)
       }
     });
 
-    const relatos = visibleVideos.filter((video) => video.contentType === "relato" || /relato/i.test(video.category || "") || /relato/i.test(video.title));
-    if (relatos.length > 0) rows.push({ title: "Relatos proibidos", eyebrow: "TESTEMUNHOS", videos: uniqueByCode(relatos).slice(0, 12) });
+    const relatos = visibleVideos.filter(isRelato);
+    if (relatos.length > 0) rows.push({ title: "Relatos Proibidos", eyebrow: "TESTEMUNHOS", videos: uniqueByCode(relatos).slice(0, 12) });
   }
 
   return rows.filter((row) => row.videos.length > 0);
@@ -113,7 +124,7 @@ function pickHeroItems(content: any, videos: Video[], activeCategory: string) {
 
   if (activeCategory === "todos") return merged.slice(0, 8);
 
-  const filtered = merged.filter((item) => categoryKey(item.category) === activeCategory);
+  const filtered = merged.filter((item) => categoryKey(item.category) === activeCategory || (activeCategory === "relatos-proibidos" && isRelato(item)));
   return filtered.length ? filtered.slice(0, 8) : merged.slice(0, 8);
 }
 
@@ -191,11 +202,11 @@ export function StreamingHome({ content }: { content: any }) {
   }, [heroItems.length]);
 
   const availableCategories = useMemo(() => {
-    const fromVideos = Array.from(new Set(videos.map((video) => video.category).filter(Boolean))) as string[];
+    const fromVideos = videos.map((video) => categoryLabel(video.category)).filter(Boolean);
     const base = (content.categories || [])
       .filter((category: Category) => category.active !== false)
-      .map((category: Category) => category.title);
-    return Array.from(new Set([...fromVideos, ...base])).filter(Boolean);
+      .map((category: Category) => categoryLabel(category.title));
+    return Array.from(new Set([...fromVideos, ...base])).filter((category) => category && category !== "Sem categoria");
   }, [content.categories, videos]);
 
   const rows = useMemo(() => buildRows(videos, content.archives || [], activeCategory), [videos, content.archives, activeCategory]);
