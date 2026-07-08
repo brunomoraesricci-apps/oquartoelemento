@@ -4776,7 +4776,7 @@ main{position:relative;z-index:3}
 }
 
 .streamCardPremium:hover .streamThumbImage {
-  transform: scale(1.12);
+  transform: scale(1.06);
   filter: saturate(1.02) contrast(1.22) brightness(.92);
 }
 
@@ -4817,51 +4817,18 @@ main{position:relative;z-index:3}
   background: rgba(190, 38, 26, .82);
   border-color: rgba(246, 224, 184, .32);
   box-shadow: 0 18px 48px rgba(0,0,0,.48), 0 0 34px rgba(224,50,34,.28);
-  opacity: 0;
-  transition: opacity .22s ease, transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease;
+  opacity: .88;
+  transition: opacity .22s ease, transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease, background .22s ease;
 }
 
 .streamCardPremium:hover .streamPlayPremium {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 20px 54px rgba(0,0,0,.52), 0 0 42px rgba(224,50,34,.36);
 }
 
-.streamHoverActions {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  z-index: 4;
-  display: flex;
-  gap: 8px;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity .2s ease, transform .2s ease;
-}
-
-.streamCardPremium:hover .streamHoverActions {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.streamHoverActions span {
-  flex: 1;
-  padding: 8px 10px;
-  border: 1px solid rgba(246, 224, 184, .18);
-  background: rgba(8,4,3,.64);
-  color: rgba(246,224,184,.92);
-  text-align: center;
-  text-transform: uppercase;
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: .12em;
-  backdrop-filter: blur(8px);
-}
-
-.streamHoverActions span:first-child {
-  background: linear-gradient(180deg, rgba(190,38,26,.82), rgba(76,13,8,.86));
-  border-color: rgba(224,50,34,.68);
-}
+/* v8.1.2.1 - Thumbnail overlay keeps only the central play icon.
+   Primary actions stay in the card footer to avoid duplicated CTAs. */
 
 .streamMetaStrip {
   position: absolute;
@@ -4933,15 +4900,15 @@ main{position:relative;z-index:3}
 .streamCardPremium .streamActions {
   opacity: 1;
   transform: translateY(0);
-  max-height: 0;
-  margin-top: 0;
-  overflow: hidden;
-  transition: max-height .22s ease, margin-top .22s ease, opacity .22s ease;
+  max-height: 42px;
+  margin-top: 13px;
+  overflow: visible;
+  transition: opacity .22s ease, transform .22s ease;
 }
 
 .streamCardPremium:hover .streamActions {
-  max-height: 42px;
-  margin-top: 13px;
+  opacity: 1;
+  transform: translateY(-1px);
 }
 
 .streamCardPremium .streamActions button,
@@ -4965,6 +4932,5 @@ main{position:relative;z-index:3}
 @media (max-width: 860px) {
   .streamCardPremium:hover { transform: translateY(-4px) scale(1.015); }
   .streamPlayPremium { opacity: 1; transform: translate(-50%, -50%) scale(.9); }
-  .streamHoverActions { display: none; }
   .streamCardPremium .streamActions { max-height: 42px; margin-top: 13px; }
 }

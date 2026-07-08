@@ -137,10 +137,6 @@ function StreamingCard({ video, onPlay }: { video: Video; onPlay: (video: Video)
         <span className="streamThumbImage" style={{ "--img": `url("${video.image}")` } as React.CSSProperties} />
         <span className="streamThumbNoise" aria-hidden="true" />
         <span className="streamPlay streamPlayPremium">▶</span>
-        <span className="streamHoverActions" aria-hidden="true">
-          <span>▶ Assistir</span>
-          <span>Abrir dossiê</span>
-        </span>
         <span className="streamMetaStrip">
           <span>{label}</span>
           {video.duration && <span>{video.duration}</span>}
