@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import type { Variants } from "framer-motion";
 import { TransmissionModal } from "@/components/TransmissionModal";
 
 type Video = {
@@ -32,6 +34,28 @@ type Category = {
   slug?: string;
   symbol?: string;
   active?: boolean;
+};
+
+const revealViewport = { once: true, amount: 0.18 };
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 22, filter: "blur(6px)" },
+  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.62, ease: "easeOut" } },
+};
+
+const rowReveal: Variants = {
+  hidden: { opacity: 0, y: 26 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.58, ease: "easeOut" } },
+};
+
+const railReveal: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.055, delayChildren: 0.08 } },
+};
+
+const cardReveal: Variants = {
+  hidden: { opacity: 0, y: 18, scale: 0.985 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.44, ease: "easeOut" } },
 };
 
 function slugify(value: string) {
@@ -132,7 +156,7 @@ function StreamingCard({ video, onPlay }: { video: Video; onPlay: (video: Video)
   const label = categoryLabel(video.category);
 
   return (
-    <article className="streamCard streamCardPremium">
+    <motion.article className="streamCard streamCardPremium" variants={cardReveal}>
       <button className="streamThumb" type="button" onClick={() => onPlay(video)} aria-label={`Assistir ${video.title}`}>
         <span className="streamThumbImage" style={{ "--img": `url("${video.image}")` } as React.CSSProperties} />
         <span className="streamThumbNoise" aria-hidden="true" />
@@ -155,7 +179,7 @@ function StreamingCard({ video, onPlay }: { video: Video; onPlay: (video: Video)
           <a href={`/transmissoes/${videoSlug(video)}`}>Dossiê</a>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }
 
@@ -163,7 +187,7 @@ function ArchiveRail({ archives }: { archives: Archive[] }) {
   if (!archives?.length) return null;
 
   return (
-    <section className="streamRow archiveStreamRow">
+    <motion.section className="streamRow archiveStreamRow" variants={rowReveal} initial="hidden" whileInView="show" viewport={revealViewport}>
       <div className="streamRowHead">
         <div>
           <span>ARQUIVOS RECUPERADOS</span>
@@ -171,9 +195,9 @@ function ArchiveRail({ archives }: { archives: Archive[] }) {
         </div>
         <a href="/arquivos">Abrir acervo →</a>
       </div>
-      <div className="streamRail">
+      <motion.div className="streamRail" variants={railReveal}>
         {archives.slice(0, 12).map((archive) => (
-          <a className="streamCard streamArchiveCard" href={`/arquivos/${archive.slug || slugify(archive.title)}`} key={archive.code}>
+          <motion.a variants={cardReveal} className="streamCard streamArchiveCard" href={`/arquivos/${archive.slug || slugify(archive.title)}`} key={archive.code}>
             <span className="streamThumb">
               <span className="streamThumbImage" style={{ "--img": `url("${archive.image}")` } as React.CSSProperties} />
               <span className="archiveCode">{archive.code}</span>
@@ -183,10 +207,10 @@ function ArchiveRail({ archives }: { archives: Archive[] }) {
               <h3>{archive.title}</h3>
               <p>{archive.description || "Documento classificado disponível."}</p>
             </div>
-          </a>
+          </motion.a>
         ))}
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 }
 
@@ -196,6 +220,7 @@ export function StreamingHome({ content }: { content: any }) {
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroPaused, setHeroPaused] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   const heroItems = useMemo(() => pickHeroItems(content, videos, activeCategory), [content, videos, activeCategory]);
   const hero = heroItems[heroIndex] || heroItems[0] || content.featuredTransmission || videos[0];
@@ -224,8 +249,11 @@ export function StreamingHome({ content }: { content: any }) {
 
   return (
     <>
-      <section
+      <motion.section
         className="streamHero streamHeroPremium terminalPanel"
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 14 }}
+        animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
@@ -283,9 +311,9 @@ export function StreamingHome({ content }: { content: any }) {
             </div>
           </>
         )}
-      </section>
+      </motion.section>
 
-      <section className="streamCategoryBar terminalPanel" aria-label="Categorias">
+      <motion.section className="streamCategoryBar terminalPanel" aria-label="Categorias" variants={fadeUp} initial="hidden" whileInView="show" viewport={revealViewport}>
         <button className={activeCategory === "todos" ? "active" : ""} type="button" onClick={() => setActiveCategory("todos")}>Todos</button>
         {availableCategories.map((category) => {
           const key = categoryKey(category);
@@ -295,9 +323,9 @@ export function StreamingHome({ content }: { content: any }) {
             </button>
           );
         })}
-      </section>
+      </motion.section>
 
-      <section className="streamIntro terminalPanel">
+      <motion.section className="streamIntro terminalPanel" variants={fadeUp} initial="hidden" whileInView="show" viewport={revealViewport}>
         <div>
           <span>ARQUIVO DIGITAL</span>
           <p>Explore transmissões, relatos e dossiês organizados como uma biblioteca investigativa.</p>
@@ -306,11 +334,11 @@ export function StreamingHome({ content }: { content: any }) {
           <a className="btn btnRed" href="/transmissoes">Ver transmissões →</a>
           <a className="btn" href="/arquivos">Explorar arquivos →</a>
         </div>
-      </section>
+      </motion.section>
 
       <div className="streamRows" id="transmissoes">
         {rows.map((row) => (
-          <section className="streamRow" key={`${row.eyebrow}-${row.title}`}>
+          <motion.section className="streamRow" key={`${row.eyebrow}-${row.title}`} variants={rowReveal} initial="hidden" whileInView="show" viewport={revealViewport}>
             <div className="streamRowHead">
               <div>
                 <span>{row.eyebrow}</span>
@@ -318,12 +346,12 @@ export function StreamingHome({ content }: { content: any }) {
               </div>
               <a href="/transmissoes">Ver todos →</a>
             </div>
-            <div className="streamRail">
+            <motion.div className="streamRail" variants={railReveal}>
               {row.videos.map((video) => (
                 <StreamingCard video={video} onPlay={setSelectedVideo} key={`${row.title}-${video.code}`} />
               ))}
-            </div>
-          </section>
+            </motion.div>
+          </motion.section>
         ))}
 
         <ArchiveRail archives={content.archives || []} />
