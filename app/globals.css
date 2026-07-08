@@ -4075,3 +4075,357 @@ main{position:relative;z-index:3}
   letter-spacing:.18em;
   border-top:1px solid rgba(200,154,98,.12);
 }
+
+/* V8.0 - Streaming Home */
+.streamHero {
+  position: relative;
+  min-height: clamp(520px, 68vh, 760px);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: clamp(34px, 6vw, 86px);
+  margin-bottom: 18px;
+  isolation: isolate;
+}
+
+.streamHeroMotion {
+  position: absolute;
+  inset: -8%;
+  background-image: var(--hero);
+  background-size: cover;
+  background-position: center;
+  filter: saturate(.76) contrast(1.18) brightness(.62);
+  transform: scale(1.08);
+  animation: qeHeroDrift 18s ease-in-out infinite alternate;
+  z-index: -3;
+}
+
+.streamHeroMotion::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.045), rgba(255,255,255,.045) 1px, transparent 1px, transparent 4px);
+  mix-blend-mode: overlay;
+  opacity: .28;
+}
+
+.streamHeroVeil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 26% 40%, rgba(184, 37, 24, .23), transparent 34%),
+    linear-gradient(90deg, rgba(9, 4, 3, .96) 0%, rgba(9, 4, 3, .62) 46%, rgba(9, 4, 3, .88) 100%),
+    linear-gradient(0deg, rgba(9, 4, 3, .98), transparent 55%);
+  z-index: -2;
+}
+
+.streamHeroMeta {
+  max-width: 840px;
+  position: relative;
+  z-index: 1;
+}
+
+.streamHeroMeta > span,
+.streamIntro span,
+.streamRowHead span {
+  color: var(--red);
+  letter-spacing: .48em;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.streamHeroMeta h1 {
+  font-family: var(--serif);
+  font-size: clamp(48px, 7vw, 112px);
+  line-height: .88;
+  margin: 18px 0;
+  max-width: 980px;
+  color: var(--paper);
+  text-shadow: 0 18px 70px rgba(0,0,0,.9);
+}
+
+.streamHeroMeta p {
+  max-width: 660px;
+  color: rgba(246, 224, 184, .82);
+  font-size: clamp(15px, 1.5vw, 19px);
+  line-height: 1.65;
+}
+
+.streamHeroActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+
+.streamHeroSignal {
+  position: absolute;
+  top: 32px;
+  right: 34px;
+  display: grid;
+  gap: 8px;
+  text-align: right;
+  color: var(--gold);
+  letter-spacing: .22em;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.streamHeroSignal b { color: var(--red); }
+.streamHeroSignal small { opacity: .55; }
+
+.streamCategoryBar {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 14px;
+  margin-bottom: 16px;
+  scrollbar-width: thin;
+}
+
+.streamCategoryBar button {
+  border: 1px solid rgba(210, 166, 91, .22);
+  color: rgba(246, 224, 184, .74);
+  background: rgba(255,255,255,.025);
+  padding: 11px 16px;
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.streamCategoryBar button:hover,
+.streamCategoryBar button.active {
+  color: var(--paper);
+  border-color: rgba(224, 50, 34, .85);
+  background: linear-gradient(180deg, rgba(190, 38, 26, .55), rgba(70, 12, 8, .75));
+  box-shadow: 0 0 0 1px rgba(224, 50, 34, .15), 0 12px 42px rgba(160, 20, 12, .22);
+}
+
+.streamIntro {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  padding: 22px 26px;
+  margin-bottom: 28px;
+  background: linear-gradient(90deg, rgba(89, 18, 13, .62), rgba(12, 6, 4, .86));
+}
+
+.streamIntro p {
+  margin: 8px 0 0;
+  color: rgba(246, 224, 184, .72);
+}
+
+.streamRows {
+  display: grid;
+  gap: 36px;
+}
+
+.streamRow {
+  min-width: 0;
+}
+
+.streamRowHead {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.streamRowHead h2 {
+  margin: 6px 0 0;
+  color: var(--paper);
+  font-size: clamp(21px, 2vw, 32px);
+  font-family: var(--serif);
+}
+
+.streamRowHead a {
+  color: var(--gold);
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: .18em;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.streamRail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(260px, 23vw);
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 3px 2px 24px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.streamCard {
+  position: relative;
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  background: rgba(18, 9, 6, .72);
+  border: 1px solid rgba(210, 166, 91, .14);
+  overflow: hidden;
+  scroll-snap-align: start;
+  transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+
+.streamCard:hover {
+  transform: translateY(-6px) scale(1.025);
+  border-color: rgba(224, 50, 34, .58);
+  box-shadow: 0 26px 70px rgba(0,0,0,.45), 0 0 0 1px rgba(224,50,34,.18);
+  z-index: 3;
+}
+
+.streamThumb {
+  display: block;
+  position: relative;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #080403;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.streamThumbImage {
+  position: absolute;
+  inset: 0;
+  background-image: var(--img);
+  background-size: cover;
+  background-position: center;
+  filter: saturate(.72) contrast(1.15) brightness(.76);
+  transition: transform .45s ease, filter .25s ease;
+}
+
+.streamCard:hover .streamThumbImage {
+  transform: scale(1.08);
+  filter: saturate(.95) contrast(1.2) brightness(.9);
+}
+
+.streamThumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(9,4,3,.82), transparent 52%);
+}
+
+.streamPlay {
+  position: absolute;
+  left: 14px;
+  bottom: 13px;
+  z-index: 1;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--paper);
+  background: rgba(190, 38, 26, .72);
+  border: 1px solid rgba(246, 224, 184, .24);
+  font-size: 13px;
+}
+
+.streamDuration,
+.archiveCode {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 1;
+  padding: 5px 8px;
+  background: rgba(0,0,0,.72);
+  color: var(--paper);
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+
+.streamInfo {
+  padding: 14px 15px 16px;
+}
+
+.streamInfo > span {
+  color: var(--gold);
+  letter-spacing: .18em;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.streamInfo h3 {
+  color: var(--paper);
+  margin: 7px 0 7px;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.streamInfo p {
+  color: rgba(246, 224, 184, .62);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.streamActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 13px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: .2s ease;
+}
+
+.streamCard:hover .streamActions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.streamActions button,
+.streamActions a {
+  flex: 1;
+  border: 1px solid rgba(210, 166, 91, .2);
+  color: var(--paper);
+  background: rgba(255,255,255,.035);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: .13em;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 9px 10px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.streamActions button {
+  background: linear-gradient(180deg, rgba(190, 38, 26, .75), rgba(70, 12, 8, .78));
+  border-color: rgba(224, 50, 34, .72);
+}
+
+.archiveStreamRow { margin-top: 2px; }
+.streamArchiveCard .streamInfo h3 { font-family: var(--serif); font-size: 18px; }
+
+@keyframes qeHeroDrift {
+  0% { transform: scale(1.08) translate3d(-1.5%, -1%, 0); }
+  50% { transform: scale(1.13) translate3d(1%, 1.5%, 0); }
+  100% { transform: scale(1.1) translate3d(2%, -1%, 0); }
+}
+
+@media (max-width: 860px) {
+  .streamHero { min-height: 560px; padding: 28px; }
+  .streamHeroSignal { display: none; }
+  .streamIntro { align-items: flex-start; flex-direction: column; }
+  .streamRail { grid-auto-columns: minmax(230px, 78vw); }
+  .streamHeroMeta h1 { font-size: clamp(42px, 13vw, 72px); }
+}
