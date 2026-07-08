@@ -4724,3 +4724,247 @@ main{position:relative;z-index:3}
   }
   .streamHeroPremium .streamHeroDots button { flex-basis: 54px; }
 }
+
+/* V8.1.2 - Premium Streaming Cards */
+.streamCardPremium {
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(33, 14, 10, .84), rgba(9, 4, 3, .92)),
+    rgba(18, 9, 6, .78);
+  border-color: rgba(210, 166, 91, .16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025), 0 12px 40px rgba(0,0,0,.24);
+  transform-origin: center bottom;
+  transition: transform .24s cubic-bezier(.2,.8,.2,1), border-color .24s ease, box-shadow .24s ease, background .24s ease;
+}
+
+.streamCardPremium::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(224,50,34,.54), transparent 28%, transparent 70%, rgba(210,166,91,.36));
+  opacity: 0;
+  transition: opacity .24s ease;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  padding: 1px;
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+}
+
+.streamCardPremium:hover {
+  transform: translateY(-10px) scale(1.045);
+  border-color: rgba(224, 50, 34, .72);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.56),
+    0 0 0 1px rgba(224,50,34,.18),
+    0 0 42px rgba(224,50,34,.16);
+}
+
+.streamCardPremium:hover::before { opacity: 1; }
+
+.streamCardPremium .streamThumb {
+  border-radius: 17px 17px 0 0;
+  isolation: isolate;
+}
+
+.streamCardPremium .streamThumbImage {
+  filter: saturate(.66) contrast(1.18) brightness(.7);
+  transform: scale(1.015);
+}
+
+.streamCardPremium:hover .streamThumbImage {
+  transform: scale(1.12);
+  filter: saturate(1.02) contrast(1.22) brightness(.92);
+}
+
+.streamCardPremium .streamThumb::after {
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.10), transparent 35%, rgba(9,4,3,.9) 100%),
+    radial-gradient(circle at 50% 50%, transparent 42%, rgba(0,0,0,.32) 100%);
+  transition: opacity .22s ease, background .22s ease;
+}
+
+.streamCardPremium:hover .streamThumb::after {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.08) 42%, rgba(9,4,3,.94) 100%),
+    radial-gradient(circle at 50% 50%, transparent 36%, rgba(0,0,0,.44) 100%);
+}
+
+.streamThumbNoise {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: .18;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.045) 0 1px, transparent 1px 4px),
+    radial-gradient(circle at 20% 80%, rgba(224,50,34,.12), transparent 32%);
+  mix-blend-mode: screen;
+}
+
+.streamPlayPremium {
+  left: 50%;
+  bottom: auto;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(.82);
+  z-index: 3;
+  width: 54px;
+  height: 54px;
+  background: rgba(190, 38, 26, .82);
+  border-color: rgba(246, 224, 184, .32);
+  box-shadow: 0 18px 48px rgba(0,0,0,.48), 0 0 34px rgba(224,50,34,.28);
+  opacity: 0;
+  transition: opacity .22s ease, transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease;
+}
+
+.streamCardPremium:hover .streamPlayPremium {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.streamHoverActions {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 4;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.streamCardPremium:hover .streamHoverActions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.streamHoverActions span {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid rgba(246, 224, 184, .18);
+  background: rgba(8,4,3,.64);
+  color: rgba(246,224,184,.92);
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  backdrop-filter: blur(8px);
+}
+
+.streamHoverActions span:first-child {
+  background: linear-gradient(180deg, rgba(190,38,26,.82), rgba(76,13,8,.86));
+  border-color: rgba(224,50,34,.68);
+}
+
+.streamMetaStrip {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 4;
+  display: flex;
+  gap: 6px;
+  max-width: calc(100% - 24px);
+}
+
+.streamMetaStrip span {
+  padding: 5px 7px;
+  background: rgba(0,0,0,.62);
+  border: 1px solid rgba(210,166,91,.14);
+  color: rgba(246,224,184,.82);
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.streamCardPremium .streamDuration {
+  opacity: 0;
+}
+
+.streamCardPremium .streamInfo {
+  position: relative;
+  padding: 14px 15px 16px;
+  background: linear-gradient(180deg, rgba(20,8,6,.18), rgba(7,3,2,.42));
+}
+
+.streamInfoTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.streamInfoTop > span,
+.streamInfoTop > b {
+  color: var(--gold);
+  letter-spacing: .18em;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.streamInfoTop > b {
+  color: rgba(246,224,184,.45);
+  font-size: 9px;
+}
+
+.streamCardPremium .streamInfo > span { display: none; }
+
+.streamCardPremium .streamInfo h3 {
+  min-height: 38px;
+  margin-top: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.streamCardPremium .streamActions {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 0;
+  margin-top: 0;
+  overflow: hidden;
+  transition: max-height .22s ease, margin-top .22s ease, opacity .22s ease;
+}
+
+.streamCardPremium:hover .streamActions {
+  max-height: 42px;
+  margin-top: 13px;
+}
+
+.streamCardPremium .streamActions button,
+.streamCardPremium .streamActions a {
+  border-radius: 999px;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.streamCardPremium .streamActions button:hover,
+.streamCardPremium .streamActions a:hover {
+  transform: translateY(-1px);
+  border-color: rgba(210,166,91,.46);
+  background: rgba(255,255,255,.07);
+}
+
+.streamCardPremium .streamActions button:hover {
+  border-color: rgba(224,50,34,.88);
+  background: linear-gradient(180deg, rgba(224,50,34,.92), rgba(82,13,8,.9));
+}
+
+@media (max-width: 860px) {
+  .streamCardPremium:hover { transform: translateY(-4px) scale(1.015); }
+  .streamPlayPremium { opacity: 1; transform: translate(-50%, -50%) scale(.9); }
+  .streamHoverActions { display: none; }
+  .streamCardPremium .streamActions { max-height: 42px; margin-top: 13px; }
+}

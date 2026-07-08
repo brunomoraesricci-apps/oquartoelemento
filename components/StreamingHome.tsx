@@ -129,15 +129,29 @@ function pickHeroItems(content: any, videos: Video[], activeCategory: string) {
 }
 
 function StreamingCard({ video, onPlay }: { video: Video; onPlay: (video: Video) => void }) {
+  const label = categoryLabel(video.category);
+
   return (
-    <article className="streamCard">
+    <article className="streamCard streamCardPremium">
       <button className="streamThumb" type="button" onClick={() => onPlay(video)} aria-label={`Assistir ${video.title}`}>
         <span className="streamThumbImage" style={{ "--img": `url("${video.image}")` } as React.CSSProperties} />
-        <span className="streamPlay">▶</span>
+        <span className="streamThumbNoise" aria-hidden="true" />
+        <span className="streamPlay streamPlayPremium">▶</span>
+        <span className="streamHoverActions" aria-hidden="true">
+          <span>▶ Assistir</span>
+          <span>Abrir dossiê</span>
+        </span>
+        <span className="streamMetaStrip">
+          <span>{label}</span>
+          {video.duration && <span>{video.duration}</span>}
+        </span>
         {video.duration && <span className="streamDuration">{video.duration}</span>}
       </button>
       <div className="streamInfo">
-        <span>{video.code}</span>
+        <div className="streamInfoTop">
+          <span>{video.code}</span>
+          <b>{isRelato(video) ? "RELATO" : "TRANSMISSÃO"}</b>
+        </div>
         <h3>{video.title}</h3>
         <p>{video.description || "Abrir transmissão no arquivo."}</p>
         <div className="streamActions">
