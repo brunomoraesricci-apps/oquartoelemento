@@ -4484,3 +4484,243 @@ main{position:relative;z-index:3}
   .streamRail { grid-auto-columns: minmax(230px, 78vw); }
   .streamHeroMeta h1 { font-size: clamp(42px, 13vw, 72px); }
 }
+
+/* V8.1.1 - Cinematic Hero Premium */
+.streamHeroPremium {
+  min-height: clamp(500px, 62vh, 700px);
+  border-color: rgba(210, 166, 91, .18);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.025),
+    inset 0 -160px 190px rgba(0,0,0,.72),
+    0 30px 90px rgba(0,0,0,.34);
+}
+
+.streamHeroPremium::before,
+.streamHeroPremium::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.streamHeroPremium::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 48%, transparent 32%, rgba(0,0,0,.48) 72%, rgba(0,0,0,.78) 100%),
+    linear-gradient(180deg, rgba(246,224,184,.035), transparent 14%, transparent 78%, rgba(224,50,34,.08));
+}
+
+.streamHeroPremium::after {
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 18% 85%, rgba(224,50,34,.16), transparent 28%),
+    repeating-linear-gradient(90deg, rgba(246,224,184,.018) 0 1px, transparent 1px 6px);
+  opacity: .68;
+  mix-blend-mode: screen;
+}
+
+.streamHeroPremium .streamHeroMotion {
+  inset: -10%;
+  filter: saturate(.7) contrast(1.22) brightness(.58);
+  transform: scale(1.03);
+  animation: qeHeroCinematic 18s ease-out forwards, qeHeroFadeIn 1.35s ease both;
+  will-change: transform, opacity;
+}
+
+.streamHeroPremium .streamHeroMotion::after {
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.035), rgba(255,255,255,.035) 1px, transparent 1px, transparent 4px),
+    radial-gradient(circle at 22% 38%, rgba(224,50,34,.13), transparent 30%);
+  opacity: .22;
+}
+
+.streamHeroPremium .streamHeroVeil {
+  background:
+    linear-gradient(90deg, rgba(7, 3, 2, .96) 0%, rgba(9, 4, 3, .64) 36%, rgba(9, 4, 3, .32) 60%, rgba(7, 3, 2, .86) 100%),
+    linear-gradient(0deg, rgba(7, 3, 2, .98) 0%, rgba(7, 3, 2, .68) 28%, transparent 68%),
+    radial-gradient(circle at 24% 55%, rgba(184, 37, 24, .24), transparent 34%);
+}
+
+.streamHeroPremium .streamHeroMeta {
+  animation: qeHeroCopyIn .72s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.streamHeroPremium .streamHeroMeta > span {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  text-shadow: 0 0 22px rgba(224,50,34,.28);
+}
+
+.streamHeroPremium .streamHeroMeta > span::after {
+  content: "";
+  width: 8px;
+  height: 18px;
+  background: linear-gradient(180deg, rgba(224,50,34,.95), rgba(210,166,91,.7));
+  box-shadow: 0 0 20px rgba(224,50,34,.42);
+  animation: qeCursorBlink 1.1s steps(2,end) infinite;
+}
+
+.streamHeroPremium .streamHeroMeta h1 {
+  max-width: 1080px;
+  letter-spacing: -.035em;
+  text-shadow:
+    0 22px 80px rgba(0,0,0,.94),
+    0 0 42px rgba(224,50,34,.08);
+}
+
+.streamHeroPremium .streamHeroMeta p {
+  text-shadow: 0 12px 34px rgba(0,0,0,.9);
+}
+
+.streamHeroPremium .streamHeroActions .btn {
+  padding: 15px 25px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 14px 44px rgba(0,0,0,.38);
+}
+
+.streamHeroPremium .streamHeroActions .btnRed {
+  position: relative;
+  overflow: hidden;
+}
+
+.streamHeroPremium .streamHeroActions .btnRed::after {
+  content: "";
+  position: absolute;
+  inset: -40% auto -40% -60%;
+  width: 42%;
+  transform: skewX(-24deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
+  animation: qeButtonSweep 4.8s ease-in-out infinite;
+}
+
+.streamHeroPremium .streamHeroSignal {
+  padding: 14px 16px;
+  background: rgba(6,3,2,.34);
+  border: 1px solid rgba(210,166,91,.12);
+  box-shadow: 0 18px 48px rgba(0,0,0,.34);
+  backdrop-filter: blur(8px);
+}
+
+.streamHeroScan {
+  position: absolute;
+  right: 34px;
+  bottom: 34px;
+  z-index: 2;
+  display: grid;
+  gap: 6px;
+  text-align: right;
+  color: rgba(246,224,184,.58);
+  text-transform: uppercase;
+  letter-spacing: .22em;
+  font-size: 10px;
+}
+
+.streamHeroScan b {
+  color: var(--gold);
+  letter-spacing: .16em;
+}
+
+.streamHeroScan::before {
+  content: "";
+  justify-self: end;
+  width: 130px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(224,50,34,.85), rgba(210,166,91,.7));
+  box-shadow: 0 0 22px rgba(224,50,34,.32);
+  animation: qeScanLine 2.4s ease-in-out infinite;
+}
+
+.streamHeroPremium .streamHeroDots {
+  gap: 10px;
+  bottom: 24px;
+  right: auto;
+  max-width: min(780px, calc(100% - 220px));
+}
+
+.streamHeroPremium .streamHeroDots button {
+  position: relative;
+  height: 22px;
+  flex: 0 0 78px;
+  max-width: none;
+  border: 1px solid rgba(210,166,91,.16);
+  background: rgba(8,4,3,.62);
+  color: rgba(246,224,184,.48);
+  overflow: hidden;
+}
+
+.streamHeroPremium .streamHeroDots button span {
+  position: relative;
+  z-index: 2;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .18em;
+}
+
+.streamHeroPremium .streamHeroDots button::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: linear-gradient(90deg, rgba(224,50,34,.76), rgba(210,166,91,.65));
+}
+
+.streamHeroPremium .streamHeroDots button.active {
+  color: var(--paper);
+  border-color: rgba(224,50,34,.52);
+  background: rgba(64,13,9,.62);
+}
+
+.streamHeroPremium .streamHeroDots button.active::after {
+  animation: qeHeroProgress 8.2s linear forwards;
+}
+
+.streamHeroPremium:hover .streamHeroDots button.active::after {
+  animation-play-state: paused;
+}
+
+@keyframes qeHeroCinematic {
+  0% { transform: scale(1.03) translate3d(-1%, -1%, 0); }
+  100% { transform: scale(1.105) translate3d(1.6%, .8%, 0); }
+}
+
+@keyframes qeHeroFadeIn {
+  0% { opacity: 0; filter: saturate(.5) contrast(1.3) brightness(.42) blur(4px); }
+  100% { opacity: 1; }
+}
+
+@keyframes qeHeroCopyIn {
+  0% { opacity: 0; transform: translate3d(0, 18px, 0); filter: blur(3px); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+}
+
+@keyframes qeHeroProgress {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes qeScanLine {
+  0%, 100% { opacity: .28; transform: translateX(-10px); }
+  50% { opacity: .95; transform: translateX(0); }
+}
+
+@keyframes qeCursorBlink {
+  0%, 45% { opacity: 1; }
+  46%, 100% { opacity: .25; }
+}
+
+@keyframes qeButtonSweep {
+  0%, 55% { left: -60%; }
+  72%, 100% { left: 130%; }
+}
+
+@media (max-width: 860px) {
+  .streamHeroPremium { min-height: 520px; }
+  .streamHeroScan { display: none; }
+  .streamHeroPremium .streamHeroDots {
+    max-width: calc(100% - 56px);
+    overflow-x: auto;
+  }
+  .streamHeroPremium .streamHeroDots button { flex-basis: 54px; }
+}

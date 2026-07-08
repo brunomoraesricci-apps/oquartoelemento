@@ -184,6 +184,7 @@ export function StreamingHome({ content }: { content: any }) {
   const videos = useMemo<Video[]>(() => uniqueByCode([...(content.featuredTransmission ? [content.featuredTransmission] : []), ...(content.videos || [])]), [content.featuredTransmission, content.videos]);
   const [activeCategory, setActiveCategory] = useState("todos");
   const [heroIndex, setHeroIndex] = useState(0);
+  const [heroPaused, setHeroPaused] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
   const heroItems = useMemo(() => pickHeroItems(content, videos, activeCategory), [content, videos, activeCategory]);
@@ -194,12 +195,12 @@ export function StreamingHome({ content }: { content: any }) {
   }, [activeCategory, heroItems.length]);
 
   useEffect(() => {
-    if (heroItems.length <= 1) return;
+    if (heroItems.length <= 1 || heroPaused) return;
     const timer = window.setInterval(() => {
       setHeroIndex((current) => (current + 1) % heroItems.length);
-    }, 7000);
+    }, 8200);
     return () => window.clearInterval(timer);
-  }, [heroItems.length]);
+  }, [heroItems.length, heroPaused]);
 
   const availableCategories = useMemo(() => {
     const fromVideos = videos.map((video) => categoryLabel(video.category)).filter(Boolean);
@@ -213,10 +214,14 @@ export function StreamingHome({ content }: { content: any }) {
 
   return (
     <>
-      <section className="streamHero terminalPanel">
-        <div className="streamHeroMotion" style={{ "--hero": `url("${hero?.image || content.hero?.image}")` } as React.CSSProperties} />
+      <section
+        className="streamHero streamHeroPremium terminalPanel"
+        onMouseEnter={() => setHeroPaused(true)}
+        onMouseLeave={() => setHeroPaused(false)}
+      >
+        <div key={`hero-motion-${hero?.code || hero?.slug || heroIndex}`} className="streamHeroMotion" style={{ "--hero": `url("${hero?.image || content.hero?.image}")` } as React.CSSProperties} />
         <div className="streamHeroVeil" />
-        <div className="streamHeroMeta">
+        <div key={`hero-copy-${hero?.code || hero?.slug || heroIndex}`} className="streamHeroMeta">
           <span>TRANSMISSÃO EM DESTAQUE</span>
           <h1>{hero?.title || "O Quarto Elemento"}</h1>
           <p>{hero?.description || content.hero?.description}</p>
@@ -227,8 +232,12 @@ export function StreamingHome({ content }: { content: any }) {
         </div>
         <div className="streamHeroSignal">
           <b>REC ●</b>
-          <span>SIGNAL ACTIVE</span>
-          <small>QE / STREAM MODE</small>
+          <span>{heroPaused ? "SIGNAL HOLD" : "SIGNAL ACTIVE"}</span>
+          <small>{heroItems.length > 1 ? `TRANSMISSION ${heroIndex + 1}/${heroItems.length}` : "QE / STREAM MODE"}</small>
+        </div>
+        <div className="streamHeroScan" aria-hidden="true">
+          <span>AUTO SCAN</span>
+          <b>{hero?.code || "QE-STREAM"}</b>
         </div>
 
         {heroItems.length > 1 && (
@@ -257,7 +266,9 @@ export function StreamingHome({ content }: { content: any }) {
                   className={index === heroIndex ? "active" : ""}
                   aria-label={`Abrir destaque ${index + 1}`}
                   onClick={() => setHeroIndex(index)}
-                />
+                >
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                </button>
               ))}
             </div>
           </>
