@@ -29,7 +29,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const transmissions = [content.featuredTransmission, ...(content.videos ?? [])]
     .filter(Boolean)
-    .filter((item: any) => item.contentType !== "relato" && !String(item.category ?? "").toLowerCase().includes("relato"))
     .map((item: any) => ({
       path: `/transmissoes/${item.slug ?? slugify(item.title ?? item.code ?? "transmissao")}`,
       priority: 0.75,

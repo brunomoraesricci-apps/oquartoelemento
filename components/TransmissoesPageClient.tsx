@@ -22,24 +22,56 @@ function getTransmissionSlug(video: any) {
   return video.slug || localSlugify(video.title || video.code || "transmissao");
 }
 
+function isRelatoVideo(video: any) {
+  const contentType = localSlugify(video?.contentType ?? video?.content_type ?? "");
+  const category = localSlugify(video?.category ?? video?.category_slug ?? "");
+  const title = localSlugify(video?.title ?? "");
+
+  return (
+    contentType === "relato" ||
+    contentType === "report" ||
+    category === "relatos" ||
+    category === "relato" ||
+    category === "relatos-proibidos" ||
+    title.includes("relato-proibido")
+  );
+}
+
+function normalizeCategoryLabel(value: any, video?: any) {
+  if (video && isRelatoVideo(video)) return "Relatos Proibidos";
+
+  const label = String(value ?? "").trim();
+  const normalized = localSlugify(label);
+
+  if (["relato", "relatos", "relatos-proibidos", "relato-proibido"].includes(normalized)) {
+    return "Relatos Proibidos";
+  }
+
+  return label;
+}
+
 function TransmissoesContent({ content }: { content: any }) {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("categoria") ?? "todos";
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedTransmission, setSelectedTransmission] = useState<ModalTransmission | null>(null);
 
+  // V8: a página de Transmissões é o catálogo audiovisual completo.
+  // Relatos Proibidos também são vídeos no modelo unificado, então não devem ser removidos daqui.
   const transmissions = [content.featuredTransmission, ...(content.videos ?? [])]
-    .filter(Boolean)
-    .filter((video: any) => video.contentType !== "relato" && !String(video.category ?? "").toLowerCase().includes("relato"));
+    .filter(Boolean);
 
   const categoryOptions = useMemo(() => {
-    const fromCategories = (content.categories ?? []).map((category: any) => ({
-      label: category.title,
-      value: localSlugify(category.title),
-    }));
+    const fromCategories = (content.categories ?? [])
+      .map((category: any) => normalizeCategoryLabel(category.title))
+      .filter(Boolean)
+      .map((label: string) => ({
+        label,
+        value: localSlugify(label),
+      }));
 
     const fromVideos = transmissions
-      .map((video: any) => video.category)
+      .map((video: any) => normalizeCategoryLabel(video.category, video))
       .filter(Boolean)
       .map((category: string) => ({
         label: category,
@@ -53,8 +85,9 @@ function TransmissoesContent({ content }: { content: any }) {
   }, [transmissions]);
 
   function categoryMatches(video: any, value: string) {
-    const normalized = localSlugify(video.category ?? "");
-    if (value === "relatos-proibidos" && normalized === "relatos") return true;
+    if (value === "relatos-proibidos") return isRelatoVideo(video);
+
+    const normalized = localSlugify(normalizeCategoryLabel(video.category, video));
     return normalized === value;
   }
 

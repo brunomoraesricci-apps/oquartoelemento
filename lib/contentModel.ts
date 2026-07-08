@@ -42,6 +42,15 @@ function normalizeVisibilityStatus(status: any): "Público" | "Privado" {
   return "Privado";
 }
 
+function normalizeContentType(value: any, category?: any) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (["relato", "report", "reports", "rp"].includes(normalized)) return "relato";
+  if (["short", "shorts"].includes(normalized)) return "short";
+  if (["especial", "special"].includes(normalized)) return "especial";
+  if (String(category ?? "").toLowerCase().includes("relato")) return "relato";
+  return "transmissao";
+}
+
 
 function withSeoDefaults<T extends Record<string, any>>(item: T): T & SeoFields & AutomationFields {
   return {
@@ -101,7 +110,7 @@ export function normalizeContent(content: any) {
     relatedReportCodes: compactArray(video.relatedReportCodes),
     status: normalizeVisibilityStatus(video.status),
     category: normalizeCategory(video.category),
-    contentType: video.contentType ?? (String(video.category ?? "").toLowerCase().includes("relato") ? "relato" : "transmissao"),
+    contentType: normalizeContentType(video.contentType, video.category),
   }));
 
   const bySlug = new Map<string, any>();
@@ -118,6 +127,8 @@ export function normalizeContent(content: any) {
       relatedArchives: compactArray(next.featuredTransmission.relatedArchives),
       relatedReportCodes: compactArray(next.featuredTransmission.relatedReportCodes),
       status: normalizeVisibilityStatus(next.featuredTransmission.status),
+      category: normalizeCategory(next.featuredTransmission.category),
+      contentType: normalizeContentType(next.featuredTransmission.contentType, next.featuredTransmission.category),
     };
   }
 
