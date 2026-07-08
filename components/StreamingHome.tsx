@@ -220,6 +220,8 @@ export function StreamingHome({ content }: { content: any }) {
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroPaused, setHeroPaused] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [bootVisible, setBootVisible] = useState(true);
+  const [scanMessage, setScanMessage] = useState("ACCESSING ARCHIVE");
   const shouldReduceMotion = useReducedMotion();
 
   const heroItems = useMemo(() => pickHeroItems(content, videos, activeCategory), [content, videos, activeCategory]);
@@ -228,6 +230,31 @@ export function StreamingHome({ content }: { content: any }) {
   useEffect(() => {
     setHeroIndex(0);
   }, [activeCategory, heroItems.length]);
+
+  useEffect(() => {
+    if (shouldReduceMotion) {
+      setBootVisible(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => setBootVisible(false), 1500);
+    return () => window.clearTimeout(timer);
+  }, [shouldReduceMotion]);
+
+  useEffect(() => {
+    if (shouldReduceMotion) {
+      setScanMessage("SIGNAL ACTIVE");
+      return;
+    }
+
+    setScanMessage("SCANNING ARCHIVE");
+    const foundTimer = window.setTimeout(() => setScanMessage("TRANSMISSION FOUND"), 520);
+    const activeTimer = window.setTimeout(() => setScanMessage("SIGNAL ACTIVE"), 1280);
+    return () => {
+      window.clearTimeout(foundTimer);
+      window.clearTimeout(activeTimer);
+    };
+  }, [heroIndex, activeCategory, shouldReduceMotion]);
 
   useEffect(() => {
     if (heroItems.length <= 1 || heroPaused) return;
@@ -249,6 +276,17 @@ export function StreamingHome({ content }: { content: any }) {
 
   return (
     <>
+      {bootVisible && (
+        <div className="immersiveBoot" aria-hidden="true">
+          <div className="immersiveBootBox">
+            <span>O QUARTO ELEMENTO</span>
+            <b>ACCESSING ARCHIVE</b>
+            <i />
+            <p>ACCESS GRANTED</p>
+          </div>
+        </div>
+      )}
+
       <motion.section
         className="streamHero streamHeroPremium terminalPanel"
         initial={shouldReduceMotion ? false : { opacity: 0, y: 14 }}
@@ -270,11 +308,11 @@ export function StreamingHome({ content }: { content: any }) {
         </div>
         <div className="streamHeroSignal">
           <b>REC ●</b>
-          <span>{heroPaused ? "SIGNAL HOLD" : "SIGNAL ACTIVE"}</span>
+          <span>{heroPaused ? "SIGNAL HOLD" : scanMessage}</span>
           <small>{heroItems.length > 1 ? `TRANSMISSION ${heroIndex + 1}/${heroItems.length}` : "QE / STREAM MODE"}</small>
         </div>
         <div className="streamHeroScan" aria-hidden="true">
-          <span>AUTO SCAN</span>
+          <span>{scanMessage}</span>
           <b>{hero?.code || "QE-STREAM"}</b>
         </div>
 

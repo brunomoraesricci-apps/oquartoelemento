@@ -4934,3 +4934,216 @@ main{position:relative;z-index:3}
   .streamPlayPremium { opacity: 1; transform: translate(-50%, -50%) scale(.9); }
   .streamCardPremium .streamActions { max-height: 42px; margin-top: 13px; }
 }
+
+/* V8.1.4 - Immersive Experience */
+.immersiveTopbar {
+  transition: height .28s ease, background .28s ease, border-color .28s ease, box-shadow .28s ease, backdrop-filter .28s ease;
+}
+
+.topbarScrolled {
+  background: rgba(3, 2, 1, .88);
+  border-bottom-color: rgba(224, 50, 34, .30);
+  box-shadow: 0 18px 58px rgba(0,0,0,.38), 0 1px 0 rgba(224,50,34,.20);
+  backdrop-filter: blur(18px) saturate(1.15);
+}
+
+.topbarScrolled::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(224,50,34,.78), rgba(210,166,91,.42), transparent);
+  opacity: .75;
+}
+
+.immersiveBoot {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(92, 15, 10, .38), transparent 34%),
+    linear-gradient(180deg, #020101, #050302 54%, #020101);
+  animation: immersiveBootOut .48s ease 1.12s forwards;
+  pointer-events: none;
+}
+
+.immersiveBoot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 4px),
+    radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,.76));
+  opacity: .42;
+  mix-blend-mode: screen;
+}
+
+.immersiveBootBox {
+  position: relative;
+  width: min(440px, calc(100vw - 48px));
+  padding: 28px;
+  border: 1px solid rgba(210,166,91,.20);
+  background: rgba(4,2,1,.62);
+  box-shadow: 0 0 70px rgba(224,50,34,.12), inset 0 0 0 1px rgba(255,255,255,.025);
+  font-family: "Courier New", monospace;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+}
+
+.immersiveBootBox span,
+.immersiveBootBox b,
+.immersiveBootBox p {
+  display: block;
+}
+
+.immersiveBootBox span {
+  color: var(--gold2);
+  font-size: 11px;
+  margin-bottom: 18px;
+}
+
+.immersiveBootBox b {
+  color: var(--red);
+  font-size: 13px;
+  opacity: 0;
+  animation: immersiveLineIn .18s ease .12s forwards;
+}
+
+.immersiveBootBox i {
+  display: block;
+  height: 3px;
+  margin: 18px 0;
+  background: linear-gradient(90deg, rgba(224,50,34,.95), rgba(210,166,91,.75));
+  box-shadow: 0 0 24px rgba(224,50,34,.35);
+  transform-origin: left;
+  transform: scaleX(0);
+  animation: immersiveLoad .62s cubic-bezier(.2,.8,.2,1) .28s forwards;
+}
+
+.immersiveBootBox p {
+  margin: 0;
+  color: rgba(246,224,184,.74);
+  font-size: 11px;
+  opacity: 0;
+  animation: immersiveLineIn .18s ease .88s forwards;
+}
+
+.streamHeroPremium .streamHeroSignal span,
+.streamHeroScan span {
+  transition: opacity .2s ease, color .2s ease, text-shadow .2s ease;
+  text-shadow: 0 0 18px rgba(224,50,34,.20);
+}
+
+.streamHeroPremium .streamHeroSignal span:not(:empty) {
+  color: rgba(246,224,184,.76);
+}
+
+.streamHeroScan {
+  padding: 12px 14px;
+  border: 1px solid rgba(210,166,91,.10);
+  background: rgba(4,2,1,.22);
+  backdrop-filter: blur(7px);
+}
+
+.streamHeroScan b {
+  text-shadow: 0 0 20px rgba(210,166,91,.18);
+}
+
+.streamHeroMeta h1::after {
+  content: "";
+  display: inline-block;
+  width: .42em;
+  height: .08em;
+  margin-left: .14em;
+  transform: translateY(-.1em);
+  background: rgba(224,50,34,.80);
+  box-shadow: 0 0 18px rgba(224,50,34,.38);
+  animation: qeCursorBlink 1.1s steps(2,end) infinite;
+}
+
+.streamCategoryBar button,
+.streamActions button,
+.streamActions a,
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.streamCategoryBar button::before,
+.streamActions button::before,
+.streamActions a::before,
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: -40% auto -40% -70%;
+  width: 44%;
+  transform: skewX(-24deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+
+.streamCategoryBar button:hover::before,
+.streamActions button:hover::before,
+.streamActions a:hover::before,
+.btn:hover::before {
+  opacity: 1;
+  animation: immersiveSweep .72s ease forwards;
+}
+
+.streamRowHead h2 {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.streamRowHead h2::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border: 1px solid rgba(224,50,34,.9);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(224,50,34,.48);
+  background: rgba(224,50,34,.20);
+}
+
+.streamRail {
+  scroll-behavior: smooth;
+}
+
+.streamRail::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, rgba(224,50,34,.45), rgba(210,166,91,.32));
+  border-radius: 99px;
+}
+
+@keyframes immersiveBootOut {
+  to { opacity: 0; visibility: hidden; }
+}
+
+@keyframes immersiveLineIn {
+  from { opacity: 0; transform: translateY(6px); filter: blur(2px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes immersiveLoad {
+  to { transform: scaleX(1); }
+}
+
+@keyframes immersiveSweep {
+  from { left: -70%; }
+  to { left: 140%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .immersiveBoot { display: none; }
+  .streamHeroMeta h1::after { display: none; }
+  .streamCategoryBar button:hover::before,
+  .streamActions button:hover::before,
+  .streamActions a:hover::before,
+  .btn:hover::before { animation: none; }
+}

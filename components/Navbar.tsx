@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { SystemIdentity } from "@/components/SystemIdentity";
 import { ReportModal } from "@/components/ReportModal";
@@ -25,7 +26,15 @@ function isActive(pathname: string, href: string) {
 
 export function Navbar({ email, sections, contentData }: { email: string; sections?: SectionsConfig; contentData?: any }) {
   const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
   const isVisible = (key: keyof SectionsConfig) => sections?.[key] !== false;
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 72);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const navItems = [
     { label: "Início", href: "/", visible: true },
@@ -38,7 +47,7 @@ export function Navbar({ email, sections, contentData }: { email: string; sectio
   ];
 
   return (
-    <header className="topbar">
+    <header className={`topbar immersiveTopbar ${scrolled ? "topbarScrolled" : ""}`}>
       <SystemIdentity />
 
       <nav className="nav">
