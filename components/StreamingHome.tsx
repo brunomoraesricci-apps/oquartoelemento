@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TransmissionModal } from "@/components/TransmissionModal";
 
 type Video = {
@@ -66,12 +66,6 @@ function buildRows(videos: Video[], archives: Archive[], activeCategory: string)
     ? videos
     : videos.filter((video) => categoryKey(video.category) === activeCategory);
 
-  const groups = new Map<string, Video[]>();
-  visibleVideos.forEach((video) => {
-    const label = video.category || "Transmissões";
-    groups.set(label, [...(groups.get(label) || []), video]);
-  });
-
   const rows: { title: string; eyebrow: string; videos: Video[] }[] = [];
 
   rows.push({
@@ -80,23 +74,47 @@ function buildRows(videos: Video[], archives: Archive[], activeCategory: string)
     videos: uniqueByCode(visibleVideos).slice(0, 14),
   });
 
-  Array.from(groups.entries()).forEach(([category, items]) => {
-    if (items.length > 0) {
-      rows.push({
-        title: category,
-        eyebrow: "DOSSIÊ POR TEMA",
-        videos: uniqueByCode(items).slice(0, 16),
-      });
-    }
-  });
-
   const top10 = visibleVideos.filter((video) => /top\s*10/i.test(video.title) || video.tags?.some((tag) => /top\s*10/i.test(tag)));
-  if (top10.length > 0) rows.splice(1, 0, { title: "Top 10 e listas investigativas", eyebrow: "COLEÇÃO", videos: uniqueByCode(top10).slice(0, 12) });
+  if (activeCategory === "todos" && top10.length > 0) {
+    rows.push({
+      title: "Top 10 e listas investigativas",
+      eyebrow: "COLEÇÃO",
+      videos: uniqueByCode(top10).slice(0, 12),
+    });
+  }
 
-  const relatos = visibleVideos.filter((video) => video.contentType === "relato" || /relato/i.test(video.category || "") || /relato/i.test(video.title));
-  if (relatos.length > 0) rows.push({ title: "Relatos proibidos", eyebrow: "TESTEMUNHOS", videos: uniqueByCode(relatos).slice(0, 12) });
+  if (activeCategory === "todos") {
+    const groups = new Map<string, Video[]>();
+    visibleVideos.forEach((video) => {
+      const label = video.category || "Transmissões";
+      groups.set(label, [...(groups.get(label) || []), video]);
+    });
+
+    Array.from(groups.entries()).forEach(([category, items]) => {
+      if (items.length > 0) {
+        rows.push({
+          title: category,
+          eyebrow: "DOSSIÊ POR TEMA",
+          videos: uniqueByCode(items).slice(0, 16),
+        });
+      }
+    });
+
+    const relatos = visibleVideos.filter((video) => video.contentType === "relato" || /relato/i.test(video.category || "") || /relato/i.test(video.title));
+    if (relatos.length > 0) rows.push({ title: "Relatos proibidos", eyebrow: "TESTEMUNHOS", videos: uniqueByCode(relatos).slice(0, 12) });
+  }
 
   return rows.filter((row) => row.videos.length > 0);
+}
+
+function pickHeroItems(content: any, videos: Video[], activeCategory: string) {
+  const configured = content.hero?.carouselItems?.length ? content.hero.carouselItems : [];
+  const merged = uniqueByCode([...(configured || []), ...(content.featuredTransmission ? [content.featuredTransmission] : []), ...videos]);
+
+  if (activeCategory === "todos") return merged.slice(0, 8);
+
+  const filtered = merged.filter((item) => categoryKey(item.category) === activeCategory);
+  return filtered.length ? filtered.slice(0, 8) : merged.slice(0, 8);
 }
 
 function StreamingCard({ video, onPlay }: { video: Video; onPlay: (video: Video) => void }) {
@@ -152,12 +170,25 @@ function ArchiveRail({ archives }: { archives: Archive[] }) {
 }
 
 export function StreamingHome({ content }: { content: any }) {
-  const videos = useMemo<Video[]>(() => uniqueByCode([...(content.videos || [])]), [content.videos]);
+  const videos = useMemo<Video[]>(() => uniqueByCode([...(content.featuredTransmission ? [content.featuredTransmission] : []), ...(content.videos || [])]), [content.featuredTransmission, content.videos]);
   const [activeCategory, setActiveCategory] = useState("todos");
+  const [heroIndex, setHeroIndex] = useState(0);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
-  const heroItems = content.hero?.carouselItems?.length ? content.hero.carouselItems : videos.slice(0, 5);
-  const hero = heroItems[0] || content.featuredTransmission || videos[0];
+  const heroItems = useMemo(() => pickHeroItems(content, videos, activeCategory), [content, videos, activeCategory]);
+  const hero = heroItems[heroIndex] || heroItems[0] || content.featuredTransmission || videos[0];
+
+  useEffect(() => {
+    setHeroIndex(0);
+  }, [activeCategory, heroItems.length]);
+
+  useEffect(() => {
+    if (heroItems.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setHeroIndex((current) => (current + 1) % heroItems.length);
+    }, 7000);
+    return () => window.clearInterval(timer);
+  }, [heroItems.length]);
 
   const availableCategories = useMemo(() => {
     const fromVideos = Array.from(new Set(videos.map((video) => video.category).filter(Boolean))) as string[];
@@ -188,6 +219,38 @@ export function StreamingHome({ content }: { content: any }) {
           <span>SIGNAL ACTIVE</span>
           <small>QE / STREAM MODE</small>
         </div>
+
+        {heroItems.length > 1 && (
+          <>
+            <button
+              className="streamHeroNav streamHeroNavPrev"
+              type="button"
+              aria-label="Transmissão anterior"
+              onClick={() => setHeroIndex((current) => (current - 1 + heroItems.length) % heroItems.length)}
+            >
+              ‹
+            </button>
+            <button
+              className="streamHeroNav streamHeroNavNext"
+              type="button"
+              aria-label="Próxima transmissão"
+              onClick={() => setHeroIndex((current) => (current + 1) % heroItems.length)}
+            >
+              ›
+            </button>
+            <div className="streamHeroDots" aria-label="Itens em destaque">
+              {heroItems.map((item: Video, index: number) => (
+                <button
+                  type="button"
+                  key={`${item.code || item.slug || item.title}-${index}`}
+                  className={index === heroIndex ? "active" : ""}
+                  aria-label={`Abrir destaque ${index + 1}`}
+                  onClick={() => setHeroIndex(index)}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </section>
 
       <section className="streamCategoryBar terminalPanel" aria-label="Categorias">
